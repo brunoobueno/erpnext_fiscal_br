@@ -146,13 +146,8 @@ class SEFAZTransmitter:
     
     def _send_request(self, url, xml_body, soap_action):
         """Envia requisição SOAP para a SEFAZ"""
-        # Envelope SOAP
-        soap_envelope = f'''<?xml version="1.0" encoding="UTF-8"?>
-<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <soap12:Body>
-        {xml_body}
-    </soap12:Body>
-</soap12:Envelope>'''
+        # Envelope SOAP (sem espaços extras para evitar erro de caracteres de edição)
+        soap_envelope = f'<?xml version="1.0" encoding="UTF-8"?><soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap12:Body>{xml_body}</soap12:Body></soap12:Envelope>'
         
         headers = {
             'Content-Type': 'application/soap+xml; charset=utf-8',
@@ -247,13 +242,7 @@ class SEFAZTransmitter:
         ambiente = self.config.get_ambiente_codigo()
         uf = self.config.codigo_uf
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4">
-    <consStatServ xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-        <tpAmb>{ambiente}</tpAmb>
-        <cUF>{uf}</cUF>
-        <xServ>STATUS</xServ>
-    </consStatServ>
-</nfeDadosMsg>'''
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4"><consStatServ xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>{ambiente}</tpAmb><cUF>{uf}</cUF><xServ>STATUS</xServ></consStatServ></nfeDadosMsg>'
         
         response = self._send_request(url, xml_body, "http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4/nfeStatusServicoNF")
         return self._parse_response(response, "retConsStatServ")
@@ -282,13 +271,7 @@ class SEFAZTransmitter:
         if xml_nfe.startswith('<?xml'):
             xml_nfe = xml_nfe.split('?>', 1)[1].strip()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4">
-    <enviNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-        <idLote>{id_lote}</idLote>
-        <indSinc>1</indSinc>
-        {xml_nfe}
-    </enviNFe>
-</nfeDadosMsg>'''
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4"><enviNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><idLote>{id_lote}</idLote><indSinc>1</indSinc>{xml_nfe}</enviNFe></nfeDadosMsg>'
         
         response = self._send_request(
             url, 
@@ -323,12 +306,7 @@ class SEFAZTransmitter:
         
         ambiente = self.config.get_ambiente_codigo()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRetAutorizacao4">
-    <consReciNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-        <tpAmb>{ambiente}</tpAmb>
-        <nRec>{recibo}</nRec>
-    </consReciNFe>
-</nfeDadosMsg>'''
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRetAutorizacao4"><consReciNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>{ambiente}</tpAmb><nRec>{recibo}</nRec></consReciNFe></nfeDadosMsg>'
         
         response = self._send_request(
             url,
@@ -344,13 +322,7 @@ class SEFAZTransmitter:
         
         ambiente = self.config.get_ambiente_codigo()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4">
-    <consSitNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-        <tpAmb>{ambiente}</tpAmb>
-        <xServ>CONSULTAR</xServ>
-        <chNFe>{chave_acesso}</chNFe>
-    </consSitNFe>
-</nfeDadosMsg>'''
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4"><consSitNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>{ambiente}</tpAmb><xServ>CONSULTAR</xServ><chNFe>{chave_acesso}</chNFe></consSitNFe></nfeDadosMsg>'
         
         response = self._send_request(
             url,
@@ -383,24 +355,7 @@ class SEFAZTransmitter:
         data_evento = now_datetime().strftime("%Y-%m-%dT%H:%M:%S-03:00")
         id_evento = f"ID110111{chave_acesso}01"
         
-        xml_evento = f'''<?xml version="1.0" encoding="UTF-8"?>
-<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-    <infEvento Id="{id_evento}">
-        <cOrgao>{self.config.codigo_uf}</cOrgao>
-        <tpAmb>{ambiente}</tpAmb>
-        <CNPJ>{cnpj}</CNPJ>
-        <chNFe>{chave_acesso}</chNFe>
-        <dhEvento>{data_evento}</dhEvento>
-        <tpEvento>110111</tpEvento>
-        <nSeqEvento>1</nSeqEvento>
-        <verEvento>1.00</verEvento>
-        <detEvento versao="1.00">
-            <descEvento>Cancelamento</descEvento>
-            <nProt>{protocolo}</nProt>
-            <xJust>{justificativa}</xJust>
-        </detEvento>
-    </infEvento>
-</evento>'''
+        xml_evento = f'<?xml version="1.0" encoding="UTF-8"?><evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><infEvento Id="{id_evento}"><cOrgao>{self.config.codigo_uf}</cOrgao><tpAmb>{ambiente}</tpAmb><CNPJ>{cnpj}</CNPJ><chNFe>{chave_acesso}</chNFe><dhEvento>{data_evento}</dhEvento><tpEvento>110111</tpEvento><nSeqEvento>1</nSeqEvento><verEvento>1.00</verEvento><detEvento versao="1.00"><descEvento>Cancelamento</descEvento><nProt>{protocolo}</nProt><xJust>{justificativa}</xJust></detEvento></infEvento></evento>'
         
         # Assina evento
         signer = XMLSigner(self.empresa)
@@ -410,12 +365,8 @@ class SEFAZTransmitter:
         if xml_assinado.startswith('<?xml'):
             xml_assinado = xml_assinado.split('?>', 1)[1].strip()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4">
-    <envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-        <idLote>{int(now_datetime().timestamp())}</idLote>
-        {xml_assinado}
-    </envEvento>
-</nfeDadosMsg>'''
+        id_lote = str(int(now_datetime().timestamp()))
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4"><envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><idLote>{id_lote}</idLote>{xml_assinado}</envEvento></nfeDadosMsg>'
         
         response = self._send_request(
             url,
@@ -447,24 +398,9 @@ class SEFAZTransmitter:
         data_evento = now_datetime().strftime("%Y-%m-%dT%H:%M:%S-03:00")
         id_evento = f"ID110110{chave_acesso}{str(sequencia).zfill(2)}"
         
-        xml_evento = f'''<?xml version="1.0" encoding="UTF-8"?>
-<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-    <infEvento Id="{id_evento}">
-        <cOrgao>{self.config.codigo_uf}</cOrgao>
-        <tpAmb>{ambiente}</tpAmb>
-        <CNPJ>{cnpj}</CNPJ>
-        <chNFe>{chave_acesso}</chNFe>
-        <dhEvento>{data_evento}</dhEvento>
-        <tpEvento>110110</tpEvento>
-        <nSeqEvento>{sequencia}</nSeqEvento>
-        <verEvento>1.00</verEvento>
-        <detEvento versao="1.00">
-            <descEvento>Carta de Correcao</descEvento>
-            <xCorrecao>{correcao}</xCorrecao>
-            <xCondUso>A Carta de Correcao e disciplinada pelo paragrafo 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e pode ser utilizada para regularizacao de erro ocorrido na emissao de documento fiscal, desde que o erro nao esteja relacionado com: I - as variaveis que determinam o valor do imposto tais como: base de calculo, aliquota, diferenca de preco, quantidade, valor da operacao ou da prestacao; II - a correcao de dados cadastrais que implique mudanca do remetente ou do destinatario; III - a data de emissao ou de saida.</xCondUso>
-        </detEvento>
-    </infEvento>
-</evento>'''
+        xCondUso = "A Carta de Correcao e disciplinada pelo paragrafo 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e pode ser utilizada para regularizacao de erro ocorrido na emissao de documento fiscal, desde que o erro nao esteja relacionado com: I - as variaveis que determinam o valor do imposto tais como: base de calculo, aliquota, diferenca de preco, quantidade, valor da operacao ou da prestacao; II - a correcao de dados cadastrais que implique mudanca do remetente ou do destinatario; III - a data de emissao ou de saida."
+        
+        xml_evento = f'<?xml version="1.0" encoding="UTF-8"?><evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><infEvento Id="{id_evento}"><cOrgao>{self.config.codigo_uf}</cOrgao><tpAmb>{ambiente}</tpAmb><CNPJ>{cnpj}</CNPJ><chNFe>{chave_acesso}</chNFe><dhEvento>{data_evento}</dhEvento><tpEvento>110110</tpEvento><nSeqEvento>{sequencia}</nSeqEvento><verEvento>1.00</verEvento><detEvento versao="1.00"><descEvento>Carta de Correcao</descEvento><xCorrecao>{correcao}</xCorrecao><xCondUso>{xCondUso}</xCondUso></detEvento></infEvento></evento>'
         
         # Assina evento
         signer = XMLSigner(self.empresa)
@@ -473,12 +409,8 @@ class SEFAZTransmitter:
         if xml_assinado.startswith('<?xml'):
             xml_assinado = xml_assinado.split('?>', 1)[1].strip()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4">
-    <envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-        <idLote>{int(now_datetime().timestamp())}</idLote>
-        {xml_assinado}
-    </envEvento>
-</nfeDadosMsg>'''
+        id_lote = str(int(now_datetime().timestamp()))
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4"><envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><idLote>{id_lote}</idLote>{xml_assinado}</envEvento></nfeDadosMsg>'
         
         response = self._send_request(
             url,
@@ -513,21 +445,7 @@ class SEFAZTransmitter:
         # ID: ID + cUF + Ano + CNPJ + mod + serie + nNFIni + nNFFin
         id_inut = f"ID{self.config.codigo_uf}{ano}{cnpj}{modelo}{str(serie).zfill(3)}{str(numero_inicial).zfill(9)}{str(numero_final).zfill(9)}"
         
-        xml_inut = f'''<?xml version="1.0" encoding="UTF-8"?>
-<inutNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
-    <infInut Id="{id_inut}">
-        <tpAmb>{ambiente}</tpAmb>
-        <xServ>INUTILIZAR</xServ>
-        <cUF>{self.config.codigo_uf}</cUF>
-        <ano>{ano}</ano>
-        <CNPJ>{cnpj}</CNPJ>
-        <mod>{modelo}</mod>
-        <serie>{serie}</serie>
-        <nNFIni>{numero_inicial}</nNFIni>
-        <nNFFin>{numero_final}</nNFFin>
-        <xJust>{justificativa}</xJust>
-    </infInut>
-</inutNFe>'''
+        xml_inut = f'<?xml version="1.0" encoding="UTF-8"?><inutNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><infInut Id="{id_inut}"><tpAmb>{ambiente}</tpAmb><xServ>INUTILIZAR</xServ><cUF>{self.config.codigo_uf}</cUF><ano>{ano}</ano><CNPJ>{cnpj}</CNPJ><mod>{modelo}</mod><serie>{serie}</serie><nNFIni>{numero_inicial}</nNFIni><nNFFin>{numero_final}</nNFFin><xJust>{justificativa}</xJust></infInut></inutNFe>'
         
         # Assina
         signer = XMLSigner(self.empresa)
@@ -536,9 +454,7 @@ class SEFAZTransmitter:
         if xml_assinado.startswith('<?xml'):
             xml_assinado = xml_assinado.split('?>', 1)[1].strip()
         
-        xml_body = f'''<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeInutilizacao4">
-    {xml_assinado}
-</nfeDadosMsg>'''
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeInutilizacao4">{xml_assinado}</nfeDadosMsg>'
         
         response = self._send_request(
             url,

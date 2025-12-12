@@ -68,8 +68,8 @@ class XMLBuilder:
         # Para NFCe, adiciona infNFeSupl (depois da assinatura, não aqui)
         # O infNFeSupl será adicionado após a assinatura do XML
         
-        # Converte para string
-        xml_str = etree.tostring(nfe, encoding="unicode", pretty_print=True)
+        # Converte para string (sem pretty_print para evitar caracteres de edição)
+        xml_str = etree.tostring(nfe, encoding="unicode", pretty_print=False)
         
         # Adiciona declaração XML
         xml_str = '<?xml version="1.0" encoding="UTF-8"?>' + xml_str
