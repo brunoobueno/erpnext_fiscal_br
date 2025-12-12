@@ -393,3 +393,82 @@ def criar_nota_fiscal_from_invoice(sales_invoice, modelo="55"):
     from erpnext_fiscal_br.api.nfe import criar_nfe_from_sales_invoice
     
     return criar_nfe_from_sales_invoice(sales_invoice, modelo)
+
+
+@frappe.whitelist()
+def duplicar_nota_fiscal(nota_fiscal):
+    """
+    Duplica uma Nota Fiscal existente
+    
+    Args:
+        nota_fiscal: Nome da Nota Fiscal a ser duplicada
+    
+    Returns:
+        dict: Dados da nova nota fiscal
+    """
+    # Carrega nota original
+    nf_original = frappe.get_doc("Nota Fiscal", nota_fiscal)
+    
+    # Cria nova nota
+    nova_nf = frappe.new_doc("Nota Fiscal")
+    
+    # Copia campos principais
+    campos_copiar = [
+        'modelo', 'empresa', 'sales_invoice',
+        'cliente', 'cliente_nome', 'cpf_cnpj_destinatario', 
+        'ie_destinatario', 'contribuinte_icms', 'email_destinatario',
+        'endereco_destinatario', 'logradouro', 'numero_endereco', 
+        'complemento', 'bairro', 'cidade', 'uf', 'cep', 
+        'codigo_municipio', 'codigo_pais',
+        'natureza_operacao', 'finalidade', 'tipo_operacao',
+        'modalidade_frete', 'transportadora',
+        'valor_frete', 'valor_seguro', 'valor_desconto', 'valor_outras_despesas',
+        'informacoes_adicionais', 'informacoes_fisco'
+    ]
+    
+    for campo in campos_copiar:
+        if hasattr(nf_original, campo) and getattr(nf_original, campo):
+            setattr(nova_nf, campo, getattr(nf_original, campo))
+    
+    # Status inicial
+    nova_nf.status = 'Rascunho'
+    
+    # Limpa campos que não devem ser copiados
+    nova_nf.numero = None
+    nova_nf.serie = None
+    nova_nf.chave_acesso = None
+    nova_nf.protocolo_autorizacao = None
+    nova_nf.data_autorizacao = None
+    nova_nf.mensagem_sefaz = None
+    nova_nf.motivo_rejeicao = None
+    nova_nf.xml_nfe = None
+    nova_nf.xml_autorizado = None
+    nova_nf.danfe = None
+    nova_nf.qrcode_url = None
+    
+    # Copia itens
+    for item_original in nf_original.itens:
+        novo_item = nova_nf.append('itens', {})
+        campos_item = [
+            'item_code', 'descricao', 'ncm', 'cest', 'cfop', 
+            'unidade', 'quantidade', 'valor_unitario', 'valor_total', 'valor_desconto',
+            'origem', 'cst_icms', 'base_icms', 'aliquota_icms', 'valor_icms',
+            'base_icms_st', 'aliquota_icms_st', 'valor_icms_st',
+            'cst_ipi', 'base_ipi', 'aliquota_ipi', 'valor_ipi',
+            'cst_pis', 'base_pis', 'aliquota_pis', 'valor_pis',
+            'cst_cofins', 'base_cofins', 'aliquota_cofins', 'valor_cofins',
+            'informacoes_adicionais'
+        ]
+        for campo in campos_item:
+            if hasattr(item_original, campo) and getattr(item_original, campo) is not None:
+                setattr(novo_item, campo, getattr(item_original, campo))
+    
+    # Salva nova nota
+    nova_nf.insert(ignore_permissions=True)
+    
+    return {
+        "success": True,
+        "nota_fiscal": nova_nf.name,
+        "numero": nova_nf.numero,
+        "serie": nova_nf.serie
+    }

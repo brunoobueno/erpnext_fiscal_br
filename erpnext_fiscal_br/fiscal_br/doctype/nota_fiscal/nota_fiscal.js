@@ -135,6 +135,29 @@ frappe.ui.form.on('Nota Fiscal', {
             }
         }
 
+        // Botão Duplicar - para notas rejeitadas ou qualquer status
+        if (frm.doc.name && !frm.is_new()) {
+            frm.add_custom_button(__('Duplicar Nota'), function() {
+                frappe.call({
+                    method: 'erpnext_fiscal_br.fiscal_br.doctype.nota_fiscal.nota_fiscal.duplicar_nota_fiscal',
+                    args: {
+                        nota_fiscal: frm.doc.name
+                    },
+                    freeze: true,
+                    freeze_message: __('Duplicando nota fiscal...'),
+                    callback: function(r) {
+                        if (r.message && r.message.success) {
+                            frappe.set_route('Form', 'Nota Fiscal', r.message.nota_fiscal);
+                            frappe.show_alert({
+                                message: __('Nota fiscal duplicada com sucesso'),
+                                indicator: 'green'
+                            });
+                        }
+                    }
+                });
+            }, __('Ações'));
+        }
+
         // Indicador de status
         if (frm.doc.status) {
             let indicator = {
