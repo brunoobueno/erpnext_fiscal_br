@@ -1,0 +1,19 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+include license.txt
+recursive-include erpnext_fiscal_br *.css
+recursive-include erpnext_fiscal_br *.csv
+recursive-include erpnext_fiscal_br *.html
+recursive-include erpnext_fiscal_br *.ico
+recursive-include erpnext_fiscal_br *.js
+recursive-include erpnext_fiscal_br *.json
+recursive-include erpnext_fiscal_br *.md
+recursive-include erpnext_fiscal_br *.png
+recursive-include erpnext_fiscal_br *.py
+recursive-include erpnext_fiscal_br *.svg
+recursive-include erpnext_fiscal_br *.txt
+recursive-exclude erpnext_fiscal_br *.pyc

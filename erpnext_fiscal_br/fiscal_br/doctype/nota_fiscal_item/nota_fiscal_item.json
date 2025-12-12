@@ -1,0 +1,325 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2024-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "item_code",
+        "item_name",
+        "ncm",
+        "cest",
+        "cfop",
+        "column_break_item",
+        "quantidade",
+        "unidade",
+        "valor_unitario",
+        "valor_total",
+        "valor_desconto",
+        "section_impostos",
+        "origem",
+        "cst_icms",
+        "aliquota_icms",
+        "base_icms",
+        "valor_icms",
+        "column_break_icms",
+        "cst_icms_st",
+        "aliquota_icms_st",
+        "base_icms_st",
+        "valor_icms_st",
+        "section_ipi",
+        "cst_ipi",
+        "aliquota_ipi",
+        "base_ipi",
+        "valor_ipi",
+        "column_break_ipi",
+        "codigo_enquadramento_ipi",
+        "section_pis_cofins",
+        "cst_pis",
+        "aliquota_pis",
+        "base_pis",
+        "valor_pis",
+        "column_break_pis",
+        "cst_cofins",
+        "aliquota_cofins",
+        "base_cofins",
+        "valor_cofins",
+        "section_outros",
+        "informacoes_adicionais",
+        "numero_pedido",
+        "item_pedido"
+    ],
+    "fields": [
+        {
+            "fieldname": "item_code",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Item",
+            "options": "Item"
+        },
+        {
+            "fieldname": "item_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Descrição",
+            "reqd": 1
+        },
+        {
+            "fieldname": "ncm",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "NCM",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cest",
+            "fieldtype": "Data",
+            "label": "CEST"
+        },
+        {
+            "fieldname": "cfop",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "CFOP",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_item",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "quantidade",
+            "fieldtype": "Float",
+            "in_list_view": 1,
+            "label": "Quantidade",
+            "reqd": 1,
+            "precision": 4
+        },
+        {
+            "fieldname": "unidade",
+            "fieldtype": "Data",
+            "label": "Unidade",
+            "reqd": 1,
+            "default": "UN"
+        },
+        {
+            "fieldname": "valor_unitario",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Valor Unitário",
+            "reqd": 1
+        },
+        {
+            "fieldname": "valor_total",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Valor Total",
+            "reqd": 1
+        },
+        {
+            "fieldname": "valor_desconto",
+            "fieldtype": "Currency",
+            "label": "Desconto",
+            "default": 0
+        },
+        {
+            "fieldname": "section_impostos",
+            "fieldtype": "Section Break",
+            "label": "ICMS"
+        },
+        {
+            "fieldname": "origem",
+            "fieldtype": "Select",
+            "label": "Origem",
+            "options": "0\n1\n2\n3\n4\n5\n6\n7\n8",
+            "default": "0",
+            "description": "0=Nacional, 1=Estrangeira importação direta, 2=Estrangeira mercado interno"
+        },
+        {
+            "fieldname": "cst_icms",
+            "fieldtype": "Data",
+            "label": "CST/CSOSN ICMS",
+            "reqd": 1,
+            "description": "CST para Lucro Real/Presumido, CSOSN para Simples Nacional"
+        },
+        {
+            "fieldname": "aliquota_icms",
+            "fieldtype": "Percent",
+            "label": "Alíquota ICMS",
+            "default": 0
+        },
+        {
+            "fieldname": "base_icms",
+            "fieldtype": "Currency",
+            "label": "Base ICMS",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_icms",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_icms",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cst_icms_st",
+            "fieldtype": "Data",
+            "label": "CST ICMS ST"
+        },
+        {
+            "fieldname": "aliquota_icms_st",
+            "fieldtype": "Percent",
+            "label": "Alíquota ICMS ST",
+            "default": 0
+        },
+        {
+            "fieldname": "base_icms_st",
+            "fieldtype": "Currency",
+            "label": "Base ICMS ST",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_icms_st",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS ST",
+            "default": 0
+        },
+        {
+            "fieldname": "section_ipi",
+            "fieldtype": "Section Break",
+            "label": "IPI",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "cst_ipi",
+            "fieldtype": "Data",
+            "label": "CST IPI",
+            "default": "99"
+        },
+        {
+            "fieldname": "aliquota_ipi",
+            "fieldtype": "Percent",
+            "label": "Alíquota IPI",
+            "default": 0
+        },
+        {
+            "fieldname": "base_ipi",
+            "fieldtype": "Currency",
+            "label": "Base IPI",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_ipi",
+            "fieldtype": "Currency",
+            "label": "Valor IPI",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_ipi",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "codigo_enquadramento_ipi",
+            "fieldtype": "Data",
+            "label": "Código Enquadramento IPI",
+            "default": "999"
+        },
+        {
+            "fieldname": "section_pis_cofins",
+            "fieldtype": "Section Break",
+            "label": "PIS/COFINS",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "cst_pis",
+            "fieldtype": "Data",
+            "label": "CST PIS",
+            "default": "07"
+        },
+        {
+            "fieldname": "aliquota_pis",
+            "fieldtype": "Percent",
+            "label": "Alíquota PIS",
+            "default": 0
+        },
+        {
+            "fieldname": "base_pis",
+            "fieldtype": "Currency",
+            "label": "Base PIS",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_pis",
+            "fieldtype": "Currency",
+            "label": "Valor PIS",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_pis",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cst_cofins",
+            "fieldtype": "Data",
+            "label": "CST COFINS",
+            "default": "07"
+        },
+        {
+            "fieldname": "aliquota_cofins",
+            "fieldtype": "Percent",
+            "label": "Alíquota COFINS",
+            "default": 0
+        },
+        {
+            "fieldname": "base_cofins",
+            "fieldtype": "Currency",
+            "label": "Base COFINS",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_cofins",
+            "fieldtype": "Currency",
+            "label": "Valor COFINS",
+            "default": 0
+        },
+        {
+            "fieldname": "section_outros",
+            "fieldtype": "Section Break",
+            "label": "Outros",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "informacoes_adicionais",
+            "fieldtype": "Small Text",
+            "label": "Informações Adicionais do Item"
+        },
+        {
+            "fieldname": "numero_pedido",
+            "fieldtype": "Data",
+            "label": "Número do Pedido"
+        },
+        {
+            "fieldname": "item_pedido",
+            "fieldtype": "Data",
+            "label": "Item do Pedido"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "istable": 1,
+    "links": [],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Nota Fiscal Item",
+    "naming_rule": "Random",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

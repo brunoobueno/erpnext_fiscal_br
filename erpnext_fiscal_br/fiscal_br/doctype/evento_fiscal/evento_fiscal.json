@@ -1,0 +1,161 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:EV-{nota_fiscal}-{sequencia}",
+    "creation": "2024-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_evento",
+        "nota_fiscal",
+        "tipo_evento",
+        "sequencia",
+        "column_break_evento",
+        "data_evento",
+        "protocolo",
+        "section_detalhes",
+        "descricao",
+        "section_retorno",
+        "codigo_status",
+        "mensagem",
+        "column_break_retorno",
+        "xml_evento",
+        "xml_retorno"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_evento",
+            "fieldtype": "Section Break",
+            "label": "Evento"
+        },
+        {
+            "fieldname": "nota_fiscal",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Nota Fiscal",
+            "options": "Nota Fiscal",
+            "reqd": 1
+        },
+        {
+            "fieldname": "tipo_evento",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Tipo de Evento",
+            "options": "Cancelamento\nCarta de Correção\nInutilização\nManifestação Destinatário\nEPEC",
+            "reqd": 1
+        },
+        {
+            "fieldname": "sequencia",
+            "fieldtype": "Int",
+            "in_list_view": 1,
+            "label": "Sequência",
+            "default": 1
+        },
+        {
+            "fieldname": "column_break_evento",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "data_evento",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Data do Evento",
+            "read_only": 1
+        },
+        {
+            "fieldname": "protocolo",
+            "fieldtype": "Data",
+            "label": "Protocolo",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_detalhes",
+            "fieldtype": "Section Break",
+            "label": "Detalhes"
+        },
+        {
+            "fieldname": "descricao",
+            "fieldtype": "Small Text",
+            "label": "Descrição/Justificativa",
+            "reqd": 1
+        },
+        {
+            "fieldname": "section_retorno",
+            "fieldtype": "Section Break",
+            "label": "Retorno SEFAZ"
+        },
+        {
+            "fieldname": "codigo_status",
+            "fieldtype": "Data",
+            "label": "Código Status",
+            "read_only": 1
+        },
+        {
+            "fieldname": "mensagem",
+            "fieldtype": "Small Text",
+            "label": "Mensagem",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_retorno",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "xml_evento",
+            "fieldtype": "Attach",
+            "label": "XML Evento",
+            "read_only": 1
+        },
+        {
+            "fieldname": "xml_retorno",
+            "fieldtype": "Attach",
+            "label": "XML Retorno",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Evento Fiscal",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal Manager",
+            "share": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal User",
+            "share": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

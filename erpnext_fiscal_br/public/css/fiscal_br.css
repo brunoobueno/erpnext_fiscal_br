@@ -1,0 +1,106 @@
+/**
+ * ERPNext Fiscal BR - Estilos CSS
+ */
+
+/* Indicadores de status fiscal */
+.indicator-pill.green.fiscal-autorizada {
+    background-color: #28a745;
+}
+
+.indicator-pill.red.fiscal-cancelada {
+    background-color: #dc3545;
+}
+
+.indicator-pill.orange.fiscal-pendente {
+    background-color: #fd7e14;
+}
+
+/* Seção fiscal nos formulários */
+.fiscal-br-section {
+    border-left: 3px solid #3498db;
+    padding-left: 10px;
+}
+
+/* Chave de acesso */
+.chave-acesso {
+    font-family: monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    word-break: break-all;
+}
+
+/* Botões de ação fiscal */
+.btn-fiscal-nfe {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-fiscal-nfce {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.btn-fiscal-cancelar {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Card de status fiscal */
+.fiscal-status-card {
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.fiscal-status-card.autorizada {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.fiscal-status-card.cancelada {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.fiscal-status-card.pendente {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+}
+
+/* Tabela de itens da NF */
+.nf-items-table {
+    font-size: 12px;
+}
+
+.nf-items-table th {
+    background-color: #f8f9fa;
+}
+
+/* DANFE preview */
+.danfe-preview {
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #fff;
+}
+
+/* Alertas de certificado */
+.cert-alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.cert-alert.expiring {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+}
+
+.cert-alert.expired {
+    background-color: #f8d7da;
+    border: 1px solid #dc3545;
+}
+
+.cert-alert.valid {
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+}

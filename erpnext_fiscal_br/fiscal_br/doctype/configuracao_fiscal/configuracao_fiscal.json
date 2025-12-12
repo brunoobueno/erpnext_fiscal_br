@@ -1,0 +1,295 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "field:empresa",
+    "creation": "2024-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_empresa",
+        "empresa",
+        "cnpj",
+        "inscricao_estadual",
+        "inscricao_municipal",
+        "column_break_empresa",
+        "regime_tributario",
+        "cnae",
+        "codigo_uf",
+        "codigo_municipio",
+        "section_ambiente",
+        "ambiente",
+        "uf_emissao",
+        "column_break_ambiente",
+        "contingencia",
+        "tipo_contingencia",
+        "section_nfe",
+        "serie_nfe",
+        "proximo_numero_nfe",
+        "column_break_nfe",
+        "modelo_nfe",
+        "section_nfce",
+        "serie_nfce",
+        "proximo_numero_nfce",
+        "column_break_nfce",
+        "csc_nfce",
+        "id_token_csc",
+        "section_config",
+        "timeout_sefaz",
+        "tentativas_reenvio",
+        "column_break_config",
+        "enviar_email_automatico",
+        "gerar_danfe_automatico"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_empresa",
+            "fieldtype": "Section Break",
+            "label": "Dados da Empresa"
+        },
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Empresa",
+            "options": "Company",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "cnpj",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "CNPJ",
+            "reqd": 1,
+            "description": "CNPJ da empresa (apenas números)"
+        },
+        {
+            "fieldname": "inscricao_estadual",
+            "fieldtype": "Data",
+            "label": "Inscrição Estadual",
+            "reqd": 1
+        },
+        {
+            "fieldname": "inscricao_municipal",
+            "fieldtype": "Data",
+            "label": "Inscrição Municipal"
+        },
+        {
+            "fieldname": "column_break_empresa",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "regime_tributario",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Regime Tributário",
+            "options": "1 - Simples Nacional\n2 - Simples Nacional - Excesso\n3 - Regime Normal",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cnae",
+            "fieldtype": "Data",
+            "label": "CNAE",
+            "description": "Código Nacional de Atividade Econômica"
+        },
+        {
+            "fieldname": "codigo_uf",
+            "fieldtype": "Data",
+            "label": "Código UF (IBGE)",
+            "reqd": 1,
+            "description": "Ex: 35 para São Paulo"
+        },
+        {
+            "fieldname": "codigo_municipio",
+            "fieldtype": "Data",
+            "label": "Código Município (IBGE)",
+            "reqd": 1,
+            "description": "Código IBGE do município (7 dígitos)"
+        },
+        {
+            "fieldname": "section_ambiente",
+            "fieldtype": "Section Break",
+            "label": "Ambiente SEFAZ"
+        },
+        {
+            "fieldname": "ambiente",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Ambiente",
+            "options": "2 - Homologação\n1 - Produção",
+            "reqd": 1,
+            "default": "2 - Homologação"
+        },
+        {
+            "fieldname": "uf_emissao",
+            "fieldtype": "Select",
+            "label": "UF de Emissão",
+            "options": "AC\nAL\nAP\nAM\nBA\nCE\nDF\nES\nGO\nMA\nMT\nMS\nMG\nPA\nPB\nPR\nPE\nPI\nRJ\nRN\nRS\nRO\nRR\nSC\nSP\nSE\nTO",
+            "reqd": 1,
+            "default": "SP"
+        },
+        {
+            "fieldname": "column_break_ambiente",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "contingencia",
+            "fieldtype": "Check",
+            "label": "Modo Contingência",
+            "default": 0
+        },
+        {
+            "fieldname": "tipo_contingencia",
+            "fieldtype": "Select",
+            "label": "Tipo de Contingência",
+            "options": "\nFS-IA\nSCAN\nSVC-AN\nSVC-RS\nEPEC\nFS-DA\nOffline",
+            "depends_on": "eval:doc.contingencia"
+        },
+        {
+            "fieldname": "section_nfe",
+            "fieldtype": "Section Break",
+            "label": "Configuração NFe"
+        },
+        {
+            "fieldname": "serie_nfe",
+            "fieldtype": "Int",
+            "label": "Série NFe",
+            "reqd": 1,
+            "default": 1
+        },
+        {
+            "fieldname": "proximo_numero_nfe",
+            "fieldtype": "Int",
+            "label": "Próximo Número NFe",
+            "reqd": 1,
+            "default": 1
+        },
+        {
+            "fieldname": "column_break_nfe",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "modelo_nfe",
+            "fieldtype": "Select",
+            "label": "Modelo NFe",
+            "options": "55 - NFe\n65 - NFCe",
+            "default": "55 - NFe",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_nfce",
+            "fieldtype": "Section Break",
+            "label": "Configuração NFCe"
+        },
+        {
+            "fieldname": "serie_nfce",
+            "fieldtype": "Int",
+            "label": "Série NFCe",
+            "default": 1
+        },
+        {
+            "fieldname": "proximo_numero_nfce",
+            "fieldtype": "Int",
+            "label": "Próximo Número NFCe",
+            "default": 1
+        },
+        {
+            "fieldname": "column_break_nfce",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "csc_nfce",
+            "fieldtype": "Password",
+            "label": "CSC (NFCe)",
+            "description": "Código de Segurança do Contribuinte para NFCe"
+        },
+        {
+            "fieldname": "id_token_csc",
+            "fieldtype": "Data",
+            "label": "ID Token CSC",
+            "description": "Identificador do token CSC"
+        },
+        {
+            "fieldname": "section_config",
+            "fieldtype": "Section Break",
+            "label": "Configurações Gerais"
+        },
+        {
+            "fieldname": "timeout_sefaz",
+            "fieldtype": "Int",
+            "label": "Timeout SEFAZ (segundos)",
+            "default": 30
+        },
+        {
+            "fieldname": "tentativas_reenvio",
+            "fieldtype": "Int",
+            "label": "Tentativas de Reenvio",
+            "default": 3
+        },
+        {
+            "fieldname": "column_break_config",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "enviar_email_automatico",
+            "fieldtype": "Check",
+            "label": "Enviar Email Automático",
+            "default": 1
+        },
+        {
+            "fieldname": "gerar_danfe_automatico",
+            "fieldtype": "Check",
+            "label": "Gerar DANFE Automático",
+            "default": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Configuracao Fiscal",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal User",
+            "share": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "empresa",
+    "track_changes": 1
+}

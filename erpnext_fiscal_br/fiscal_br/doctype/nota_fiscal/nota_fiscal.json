@@ -1,0 +1,557 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:NF-{modelo}-{serie}-{numero}",
+    "creation": "2024-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_identificacao",
+        "modelo",
+        "serie",
+        "numero",
+        "column_break_id",
+        "empresa",
+        "sales_invoice",
+        "status",
+        "section_destinatario",
+        "cliente",
+        "cliente_nome",
+        "cpf_cnpj_destinatario",
+        "column_break_dest",
+        "ie_destinatario",
+        "contribuinte_icms",
+        "email_destinatario",
+        "section_endereco_dest",
+        "endereco_destinatario",
+        "logradouro",
+        "numero_endereco",
+        "complemento",
+        "bairro",
+        "column_break_end",
+        "cidade",
+        "uf",
+        "cep",
+        "codigo_municipio",
+        "codigo_pais",
+        "section_totais",
+        "valor_produtos",
+        "valor_frete",
+        "valor_seguro",
+        "valor_desconto",
+        "valor_outras_despesas",
+        "column_break_totais",
+        "valor_ipi",
+        "valor_icms",
+        "valor_icms_st",
+        "valor_pis",
+        "valor_cofins",
+        "valor_total",
+        "section_itens",
+        "itens",
+        "section_transporte",
+        "modalidade_frete",
+        "transportadora",
+        "column_break_transp",
+        "placa_veiculo",
+        "uf_veiculo",
+        "section_info_adicionais",
+        "informacoes_complementares",
+        "informacoes_fisco",
+        "section_nfe",
+        "chave_acesso",
+        "protocolo_autorizacao",
+        "data_autorizacao",
+        "column_break_nfe",
+        "ambiente",
+        "finalidade",
+        "natureza_operacao",
+        "tipo_operacao",
+        "section_xml",
+        "xml_nfe",
+        "xml_autorizado",
+        "column_break_xml",
+        "danfe",
+        "qrcode_url",
+        "section_erros",
+        "mensagem_sefaz",
+        "codigo_status",
+        "motivo_rejeicao"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_identificacao",
+            "fieldtype": "Section Break",
+            "label": "Identificação"
+        },
+        {
+            "fieldname": "modelo",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Modelo",
+            "options": "55\n65",
+            "reqd": 1,
+            "default": "55",
+            "description": "55=NFe, 65=NFCe"
+        },
+        {
+            "fieldname": "serie",
+            "fieldtype": "Int",
+            "in_list_view": 1,
+            "label": "Série",
+            "reqd": 1,
+            "default": 1
+        },
+        {
+            "fieldname": "numero",
+            "fieldtype": "Int",
+            "in_list_view": 1,
+            "label": "Número",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_id",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Empresa",
+            "options": "Company",
+            "reqd": 1
+        },
+        {
+            "fieldname": "sales_invoice",
+            "fieldtype": "Link",
+            "label": "Sales Invoice",
+            "options": "Sales Invoice"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Rascunho\nPendente\nProcessando\nAutorizada\nCancelada\nRejeitada\nDenegada\nInutilizada",
+            "default": "Rascunho",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_destinatario",
+            "fieldtype": "Section Break",
+            "label": "Destinatário"
+        },
+        {
+            "fieldname": "cliente",
+            "fieldtype": "Link",
+            "label": "Cliente",
+            "options": "Customer"
+        },
+        {
+            "fieldname": "cliente_nome",
+            "fieldtype": "Data",
+            "label": "Nome/Razão Social",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cpf_cnpj_destinatario",
+            "fieldtype": "Data",
+            "label": "CPF/CNPJ",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_dest",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "ie_destinatario",
+            "fieldtype": "Data",
+            "label": "Inscrição Estadual"
+        },
+        {
+            "fieldname": "contribuinte_icms",
+            "fieldtype": "Select",
+            "label": "Contribuinte ICMS",
+            "options": "1 - Contribuinte ICMS\n2 - Contribuinte isento\n9 - Não Contribuinte",
+            "default": "9 - Não Contribuinte"
+        },
+        {
+            "fieldname": "email_destinatario",
+            "fieldtype": "Data",
+            "label": "Email"
+        },
+        {
+            "fieldname": "section_endereco_dest",
+            "fieldtype": "Section Break",
+            "label": "Endereço do Destinatário"
+        },
+        {
+            "fieldname": "endereco_destinatario",
+            "fieldtype": "Link",
+            "label": "Endereço",
+            "options": "Address"
+        },
+        {
+            "fieldname": "logradouro",
+            "fieldtype": "Data",
+            "label": "Logradouro",
+            "reqd": 1
+        },
+        {
+            "fieldname": "numero_endereco",
+            "fieldtype": "Data",
+            "label": "Número",
+            "reqd": 1
+        },
+        {
+            "fieldname": "complemento",
+            "fieldtype": "Data",
+            "label": "Complemento"
+        },
+        {
+            "fieldname": "bairro",
+            "fieldtype": "Data",
+            "label": "Bairro",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_end",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cidade",
+            "fieldtype": "Data",
+            "label": "Cidade",
+            "reqd": 1
+        },
+        {
+            "fieldname": "uf",
+            "fieldtype": "Data",
+            "label": "UF",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cep",
+            "fieldtype": "Data",
+            "label": "CEP",
+            "reqd": 1
+        },
+        {
+            "fieldname": "codigo_municipio",
+            "fieldtype": "Data",
+            "label": "Código Município (IBGE)",
+            "reqd": 1
+        },
+        {
+            "fieldname": "codigo_pais",
+            "fieldtype": "Data",
+            "label": "Código País",
+            "default": "1058"
+        },
+        {
+            "fieldname": "section_totais",
+            "fieldtype": "Section Break",
+            "label": "Totais"
+        },
+        {
+            "fieldname": "valor_produtos",
+            "fieldtype": "Currency",
+            "label": "Valor Produtos",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_frete",
+            "fieldtype": "Currency",
+            "label": "Valor Frete",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_seguro",
+            "fieldtype": "Currency",
+            "label": "Valor Seguro",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_desconto",
+            "fieldtype": "Currency",
+            "label": "Valor Desconto",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_outras_despesas",
+            "fieldtype": "Currency",
+            "label": "Outras Despesas",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_totais",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "valor_ipi",
+            "fieldtype": "Currency",
+            "label": "Valor IPI",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_icms",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_icms_st",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS ST",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_pis",
+            "fieldtype": "Currency",
+            "label": "Valor PIS",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_cofins",
+            "fieldtype": "Currency",
+            "label": "Valor COFINS",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_total",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Valor Total",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_itens",
+            "fieldtype": "Section Break",
+            "label": "Itens"
+        },
+        {
+            "fieldname": "itens",
+            "fieldtype": "Table",
+            "label": "Itens da Nota",
+            "options": "Nota Fiscal Item",
+            "reqd": 1
+        },
+        {
+            "fieldname": "section_transporte",
+            "fieldtype": "Section Break",
+            "label": "Transporte",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "modalidade_frete",
+            "fieldtype": "Select",
+            "label": "Modalidade Frete",
+            "options": "0 - Contratação por conta do Remetente (CIF)\n1 - Contratação por conta do Destinatário (FOB)\n2 - Contratação por conta de Terceiros\n3 - Transporte Próprio por conta do Remetente\n4 - Transporte Próprio por conta do Destinatário\n9 - Sem Ocorrência de Transporte",
+            "default": "9 - Sem Ocorrência de Transporte"
+        },
+        {
+            "fieldname": "transportadora",
+            "fieldtype": "Link",
+            "label": "Transportadora",
+            "options": "Supplier"
+        },
+        {
+            "fieldname": "column_break_transp",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "placa_veiculo",
+            "fieldtype": "Data",
+            "label": "Placa Veículo"
+        },
+        {
+            "fieldname": "uf_veiculo",
+            "fieldtype": "Data",
+            "label": "UF Veículo"
+        },
+        {
+            "fieldname": "section_info_adicionais",
+            "fieldtype": "Section Break",
+            "label": "Informações Adicionais",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "informacoes_complementares",
+            "fieldtype": "Small Text",
+            "label": "Informações Complementares"
+        },
+        {
+            "fieldname": "informacoes_fisco",
+            "fieldtype": "Small Text",
+            "label": "Informações ao Fisco"
+        },
+        {
+            "fieldname": "section_nfe",
+            "fieldtype": "Section Break",
+            "label": "Dados da NFe"
+        },
+        {
+            "fieldname": "chave_acesso",
+            "fieldtype": "Data",
+            "label": "Chave de Acesso",
+            "read_only": 1,
+            "description": "44 dígitos"
+        },
+        {
+            "fieldname": "protocolo_autorizacao",
+            "fieldtype": "Data",
+            "label": "Protocolo Autorização",
+            "read_only": 1
+        },
+        {
+            "fieldname": "data_autorizacao",
+            "fieldtype": "Datetime",
+            "label": "Data Autorização",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_nfe",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "ambiente",
+            "fieldtype": "Select",
+            "label": "Ambiente",
+            "options": "1 - Produção\n2 - Homologação",
+            "read_only": 1
+        },
+        {
+            "fieldname": "finalidade",
+            "fieldtype": "Select",
+            "label": "Finalidade",
+            "options": "1 - NF-e normal\n2 - NF-e complementar\n3 - NF-e de ajuste\n4 - Devolução de mercadoria",
+            "default": "1 - NF-e normal"
+        },
+        {
+            "fieldname": "natureza_operacao",
+            "fieldtype": "Data",
+            "label": "Natureza da Operação",
+            "default": "Venda de mercadoria"
+        },
+        {
+            "fieldname": "tipo_operacao",
+            "fieldtype": "Select",
+            "label": "Tipo Operação",
+            "options": "0 - Entrada\n1 - Saída",
+            "default": "1 - Saída"
+        },
+        {
+            "fieldname": "section_xml",
+            "fieldtype": "Section Break",
+            "label": "Arquivos",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "xml_nfe",
+            "fieldtype": "Attach",
+            "label": "XML NFe (Assinado)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "xml_autorizado",
+            "fieldtype": "Attach",
+            "label": "XML Autorizado (procNFe)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_xml",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "danfe",
+            "fieldtype": "Attach",
+            "label": "DANFE (PDF)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "qrcode_url",
+            "fieldtype": "Data",
+            "label": "URL QR Code (NFCe)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_erros",
+            "fieldtype": "Section Break",
+            "label": "Retorno SEFAZ",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "mensagem_sefaz",
+            "fieldtype": "Small Text",
+            "label": "Mensagem SEFAZ",
+            "read_only": 1
+        },
+        {
+            "fieldname": "codigo_status",
+            "fieldtype": "Data",
+            "label": "Código Status",
+            "read_only": 1
+        },
+        {
+            "fieldname": "motivo_rejeicao",
+            "fieldtype": "Small Text",
+            "label": "Motivo Rejeição",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [
+        {
+            "link_doctype": "Evento Fiscal",
+            "link_fieldname": "nota_fiscal"
+        }
+    ],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Nota Fiscal",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal User",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

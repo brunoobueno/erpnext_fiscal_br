@@ -1,0 +1,187 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:{empresa}-{####}",
+    "creation": "2024-01-01 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_certificado",
+        "empresa",
+        "arquivo_pfx",
+        "senha",
+        "column_break_cert",
+        "status",
+        "tipo_certificado",
+        "section_info",
+        "razao_social_certificado",
+        "cnpj_certificado",
+        "column_break_info",
+        "validade_inicio",
+        "validade_fim",
+        "dias_para_expirar",
+        "section_dados_tecnicos",
+        "serial_number",
+        "emissor",
+        "column_break_dados",
+        "fingerprint"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_certificado",
+            "fieldtype": "Section Break",
+            "label": "Certificado Digital"
+        },
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Empresa",
+            "options": "Company",
+            "reqd": 1
+        },
+        {
+            "fieldname": "arquivo_pfx",
+            "fieldtype": "Attach",
+            "label": "Arquivo .pfx",
+            "reqd": 1,
+            "description": "Certificado digital A1 no formato .pfx"
+        },
+        {
+            "fieldname": "senha",
+            "fieldtype": "Password",
+            "label": "Senha",
+            "reqd": 1,
+            "description": "Senha do certificado digital"
+        },
+        {
+            "fieldname": "column_break_cert",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Pendente\nVálido\nExpirando\nExpirado\nInválido",
+            "default": "Pendente",
+            "read_only": 1
+        },
+        {
+            "fieldname": "tipo_certificado",
+            "fieldtype": "Select",
+            "label": "Tipo",
+            "options": "A1\nA3",
+            "default": "A1",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_info",
+            "fieldtype": "Section Break",
+            "label": "Informações do Certificado"
+        },
+        {
+            "fieldname": "razao_social_certificado",
+            "fieldtype": "Data",
+            "label": "Razão Social",
+            "read_only": 1
+        },
+        {
+            "fieldname": "cnpj_certificado",
+            "fieldtype": "Data",
+            "label": "CNPJ",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_info",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "validade_inicio",
+            "fieldtype": "Datetime",
+            "label": "Válido Desde",
+            "read_only": 1
+        },
+        {
+            "fieldname": "validade_fim",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Válido Até",
+            "read_only": 1
+        },
+        {
+            "fieldname": "dias_para_expirar",
+            "fieldtype": "Int",
+            "label": "Dias para Expirar",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_dados_tecnicos",
+            "fieldtype": "Section Break",
+            "label": "Dados Técnicos",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "serial_number",
+            "fieldtype": "Data",
+            "label": "Número Serial",
+            "read_only": 1
+        },
+        {
+            "fieldname": "emissor",
+            "fieldtype": "Data",
+            "label": "Emissor",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_dados",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "fingerprint",
+            "fieldtype": "Data",
+            "label": "Fingerprint (SHA256)",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Certificado Digital",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Fiscal Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "empresa",
+    "track_changes": 1
+}
