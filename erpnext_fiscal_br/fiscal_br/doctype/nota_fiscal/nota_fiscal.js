@@ -246,5 +246,101 @@ frappe.ui.form.on('Nota Fiscal', {
                 }
             });
         }
+    },
+
+    sales_invoice: function(frm) {
+        // Carrega dados da Sales Invoice automaticamente
+        if (frm.doc.sales_invoice) {
+            frappe.call({
+                method: 'erpnext_fiscal_br.api.nfe.get_dados_from_sales_invoice',
+                args: {
+                    sales_invoice: frm.doc.sales_invoice
+                },
+                freeze: true,
+                freeze_message: __('Carregando dados da fatura...'),
+                callback: function(r) {
+                    if (r.message) {
+                        let dados = r.message;
+                        
+                        // Dados da empresa e configuração fiscal
+                        frm.set_value('empresa', dados.empresa);
+                        if (dados.ambiente) {
+                            frm.set_value('ambiente', dados.ambiente);
+                        }
+                        if (dados.serie) {
+                            frm.set_value('serie', dados.serie);
+                        }
+                        
+                        // Dados do cliente/destinatário
+                        frm.set_value('cliente', dados.cliente);
+                        frm.set_value('cliente_nome', dados.cliente_nome);
+                        frm.set_value('cpf_cnpj_destinatario', dados.cpf_cnpj);
+                        frm.set_value('ie_destinatario', dados.ie_destinatario || '');
+                        frm.set_value('contribuinte_icms', dados.contribuinte_icms || '9');
+                        frm.set_value('email_destinatario', dados.email || '');
+                        
+                        // Endereço do destinatário
+                        if (dados.endereco) {
+                            frm.set_value('logradouro', dados.endereco.logradouro || '');
+                            frm.set_value('numero_endereco', dados.endereco.numero || 'S/N');
+                            frm.set_value('complemento', dados.endereco.complemento || '');
+                            frm.set_value('bairro', dados.endereco.bairro || '');
+                            frm.set_value('cidade', dados.endereco.cidade || '');
+                            frm.set_value('uf', dados.endereco.uf || '');
+                            frm.set_value('cep', dados.endereco.cep || '');
+                            frm.set_value('codigo_municipio', dados.endereco.codigo_municipio || '');
+                            frm.set_value('codigo_pais', dados.endereco.codigo_pais || '1058');
+                        }
+                        
+                        // Dados da operação
+                        frm.set_value('natureza_operacao', dados.natureza_operacao || 'Venda de mercadoria');
+                        frm.set_value('finalidade', dados.finalidade || '1');
+                        frm.set_value('tipo_operacao', dados.tipo_operacao || '1');
+                        
+                        // Valores totais
+                        frm.set_value('valor_produtos', dados.valor_produtos || 0);
+                        frm.set_value('valor_frete', dados.valor_frete || 0);
+                        frm.set_value('valor_seguro', dados.valor_seguro || 0);
+                        frm.set_value('valor_desconto', dados.valor_desconto || 0);
+                        frm.set_value('valor_outras_despesas', dados.valor_outras_despesas || 0);
+                        frm.set_value('valor_total', dados.valor_total || 0);
+                        
+                        // Informações adicionais
+                        if (dados.informacoes_adicionais) {
+                            frm.set_value('informacoes_adicionais', dados.informacoes_adicionais);
+                        }
+                        
+                        // Limpa itens existentes e adiciona novos
+                        frm.clear_table('itens');
+                        if (dados.itens && dados.itens.length > 0) {
+                            dados.itens.forEach(function(item) {
+                                let row = frm.add_child('itens');
+                                row.item_code = item.item_code;
+                                row.descricao = item.descricao;
+                                row.ncm = item.ncm;
+                                row.cfop = item.cfop;
+                                row.unidade = item.unidade;
+                                row.quantidade = item.quantidade;
+                                row.valor_unitario = item.valor_unitario;
+                                row.valor_total = item.valor_total;
+                                row.origem = item.origem || '0';
+                                row.cst_icms = item.cst_icms || '00';
+                                row.aliquota_icms = item.aliquota_icms || 0;
+                                row.valor_icms = item.valor_icms || 0;
+                                row.base_icms = item.valor_total || 0;
+                                row.cst_pis = item.cst_pis || '07';
+                                row.cst_cofins = item.cst_cofins || '07';
+                            });
+                            frm.refresh_field('itens');
+                        }
+                        
+                        frappe.show_alert({
+                            message: __('Todos os dados carregados da fatura'),
+                            indicator: 'green'
+                        });
+                    }
+                }
+            });
+        }
     }
 });

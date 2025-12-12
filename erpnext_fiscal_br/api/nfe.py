@@ -278,6 +278,118 @@ def _calcular_impostos_item(item, regime, uf_origem, uf_destino):
 
 
 @frappe.whitelist()
+def get_dados_from_sales_invoice(sales_invoice):
+    """
+    Retorna dados da Sales Invoice para preencher a Nota Fiscal
+    
+    Args:
+        sales_invoice: Nome da Sales Invoice
+    
+    Returns:
+        dict: Dados para preencher a nota fiscal
+    """
+    invoice = frappe.get_doc("Sales Invoice", sales_invoice)
+    customer = frappe.get_doc("Customer", invoice.customer)
+    
+    # Obtém configuração fiscal
+    from erpnext_fiscal_br.fiscal_br.doctype.configuracao_fiscal.configuracao_fiscal import ConfiguracaoFiscal
+    config = ConfiguracaoFiscal.get_config_for_company(invoice.company)
+    
+    # Dados básicos
+    dados = {
+        "empresa": invoice.company,
+        "cliente": invoice.customer,
+        "cliente_nome": customer.customer_name,
+        "cpf_cnpj": customer.get("tax_id") or customer.get("cpf_cnpj") or "",
+        "ie_destinatario": customer.get("inscricao_estadual_cliente") or "",
+        "contribuinte_icms": customer.get("contribuinte_icms") or "9",
+        "email": customer.get("email_id") or "",
+        "natureza_operacao": "Venda de mercadoria",
+        "finalidade": "1",
+        "tipo_operacao": "1",
+        "data_emissao": str(invoice.posting_date),
+        "data_saida": str(invoice.posting_date),
+        "valor_produtos": flt(invoice.total),
+        "valor_frete": flt(invoice.get("shipping_amount") or 0),
+        "valor_seguro": 0,
+        "valor_desconto": flt(invoice.discount_amount or 0),
+        "valor_outras_despesas": 0,
+        "valor_total": flt(invoice.grand_total),
+        "informacoes_adicionais": invoice.get("terms") or "",
+        "informacoes_fisco": ""
+    }
+    
+    # Dados da configuração fiscal
+    if config:
+        dados["ambiente"] = config.ambiente
+        dados["serie"] = config.serie_nfe
+    
+    # Endereço
+    endereco = _get_customer_address(invoice)
+    if endereco:
+        dados["endereco"] = {
+            "logradouro": endereco.address_line1 or "",
+            "numero": endereco.get("numero_endereco") or endereco.address_line2 or "S/N",
+            "complemento": endereco.get("complemento") or "",
+            "bairro": endereco.get("bairro") or endereco.city or "",
+            "cidade": endereco.city or "",
+            "uf": endereco.state or "",
+            "cep": (endereco.pincode or "").replace("-", "").replace(".", ""),
+            "codigo_municipio": endereco.get("codigo_municipio_ibge") or "",
+            "codigo_pais": "1058"
+        }
+        
+        # Se não tem código IBGE, tenta buscar
+        if not dados["endereco"]["codigo_municipio"] and dados["endereco"]["cidade"] and dados["endereco"]["uf"]:
+            dados["endereco"]["codigo_municipio"] = get_codigo_municipio(dados["endereco"]["cidade"], dados["endereco"]["uf"]) or ""
+    
+    # Itens
+    regime = config.get_regime_codigo() if config else "1"
+    uf_emit = config.uf_emissao if config else "SP"
+    uf_dest = dados.get("endereco", {}).get("uf") or uf_emit
+    
+    dados["itens"] = []
+    for item in invoice.items:
+        item_doc = frappe.get_doc("Item", item.item_code)
+        
+        # CFOP
+        cfop_interno = item_doc.get("cfop_venda_interna") or "5102"
+        cfop_interestadual = item_doc.get("cfop_venda_interestadual") or "6102"
+        cfop = cfop_interno if uf_emit == uf_dest else cfop_interestadual
+        
+        # CST ICMS
+        cst_icms = get_cst_icms(regime)
+        
+        # Alíquota ICMS
+        if regime in ["1", "simples"]:
+            aliquota_icms = 0
+            valor_icms = 0
+        else:
+            from erpnext_fiscal_br.utils.tax_tables import get_aliquota_icms
+            aliquota_icms = get_aliquota_icms(uf_emit, uf_dest)
+            valor_icms = flt(item.amount) * flt(aliquota_icms) / 100
+        
+        dados["itens"].append({
+            "item_code": item.item_code,
+            "descricao": item.item_name or item_doc.item_name,
+            "ncm": item_doc.get("ncm") or "00000000",
+            "cfop": cfop,
+            "unidade": item_doc.get("unidade_tributavel") or item.uom or "UN",
+            "quantidade": item.qty,
+            "valor_unitario": item.rate,
+            "valor_total": item.amount,
+            "origem": (item_doc.get("origem") or "0").split(" - ")[0] if item_doc.get("origem") else "0",
+            "cst_icms": cst_icms,
+            "aliquota_icms": aliquota_icms,
+            "valor_icms": valor_icms,
+            "cst_pis": get_cst_pis_cofins(regime),
+            "cst_cofins": get_cst_pis_cofins(regime)
+        })
+    
+    return dados
+
+
+@frappe.whitelist()
 def cancelar_nfe(nota_fiscal, justificativa):
     """
     Cancela uma NFe

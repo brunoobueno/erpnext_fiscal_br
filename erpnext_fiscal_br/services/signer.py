@@ -202,33 +202,14 @@ class XMLSigner:
     
     def _create_signed_info(self, reference_id, digest_value):
         """Cria o elemento SignedInfo"""
-        return f'''<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
-    <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
-    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
-    <Reference URI="#{reference_id}">
-        <Transforms>
-            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
-            <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
-        </Transforms>
-        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-        <DigestValue>{digest_value}</DigestValue>
-    </Reference>
-</SignedInfo>'''
+        return f'<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="#{reference_id}"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>{digest_value}</DigestValue></Reference></SignedInfo>'
     
     def _create_signature_element(self, signed_info, signature_value, certificate):
         """Cria o elemento Signature completo"""
         # Remove declaração xmlns do SignedInfo para inserção
         signed_info_clean = signed_info.replace(' xmlns="http://www.w3.org/2000/09/xmldsig#"', '')
         
-        return f'''<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
-{signed_info_clean}
-    <SignatureValue>{signature_value}</SignatureValue>
-    <KeyInfo>
-        <X509Data>
-            <X509Certificate>{certificate}</X509Certificate>
-        </X509Data>
-    </KeyInfo>
-</Signature>'''
+        return f'<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">{signed_info_clean}<SignatureValue>{signature_value}</SignatureValue><KeyInfo><X509Data><X509Certificate>{certificate}</X509Certificate></X509Data></KeyInfo></Signature>'
     
     def sign_evento(self, xml_string, reference_id):
         """
