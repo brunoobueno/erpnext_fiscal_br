@@ -471,7 +471,7 @@
         },
         {
             "fieldname": "qrcode_url",
-            "fieldtype": "Data",
+            "fieldtype": "Small Text",
             "label": "URL QR Code (NFCe)",
             "read_only": 1
         },

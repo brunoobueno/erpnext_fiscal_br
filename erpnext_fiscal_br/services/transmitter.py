@@ -162,13 +162,18 @@ class SEFAZTransmitter:
         timeout = self.config.timeout_sefaz or 30
         
         try:
+            # Em homologação, não verifica SSL da SEFAZ (comum em containers)
+            # Em produção, usa certificados do sistema
+            ambiente = self.config.get_ambiente_codigo()
+            verify_ssl = ambiente == "1"  # Só verifica em produção
+            
             response = requests.post(
                 url,
                 data=soap_envelope.encode('utf-8'),
                 headers=headers,
                 cert=(self.cert_file.name, self.key_file.name),
                 timeout=timeout,
-                verify=True
+                verify=verify_ssl
             )
             
             response.raise_for_status()
