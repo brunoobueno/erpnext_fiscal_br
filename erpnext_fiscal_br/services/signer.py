@@ -134,11 +134,14 @@ class XMLSigner:
     def _sign_manual(self, xml_string):
         """
         Assina XML manualmente (fallback)
-        Implementação básica da assinatura XMLDSig
+        Implementação da assinatura XMLDSig para NFe
         """
         try:
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import padding
+            
+            NS_NFE = '{http://www.portalfiscal.inf.br/nfe}'
+            DSIG = 'http://www.w3.org/2000/09/xmldsig#'
             
             # Remove declaração XML se existir (será adicionada no final)
             xml_clean = xml_string
@@ -149,7 +152,7 @@ class XMLSigner:
             root = etree.fromstring(xml_clean.encode('utf-8'))
             
             # Encontra infNFe
-            inf_nfe = root.find('.//{http://www.portalfiscal.inf.br/nfe}infNFe')
+            inf_nfe = root.find(f'.//{NS_NFE}infNFe')
             if inf_nfe is None:
                 inf_nfe = root.find('.//infNFe')
             
@@ -158,77 +161,83 @@ class XMLSigner:
             
             id_value = inf_nfe.get('Id')
             
-            # Canonicaliza o elemento a ser assinado (C14N)
-            c14n = etree.tostring(inf_nfe, method='c14n', exclusive=False, with_comments=False)
+            # Canonicaliza o elemento a ser assinado (C14N inclusivo)
+            c14n_inf_nfe = etree.tostring(inf_nfe, method='c14n', exclusive=False, with_comments=False)
             
             # Calcula digest (SHA-1)
-            digest = hashlib.sha1(c14n).digest()
+            digest = hashlib.sha1(c14n_inf_nfe).digest()
             digest_b64 = base64.b64encode(digest).decode()
             
-            # Cria SignedInfo como elemento XML
-            signed_info_str = (
+            # Monta SignedInfo como string para garantir formato exato
+            # Este é o formato que será assinado
+            signed_info_template = (
                 '<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#">'
-                '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>'
-                '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>'
-                f'<Reference URI="#{id_value}">'
+                '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod>'
+                '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod>'
+                '<Reference URI="#{uri}">'
                 '<Transforms>'
-                '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>'
-                '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>'
+                '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></Transform>'
+                '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></Transform>'
                 '</Transforms>'
-                '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>'
-                f'<DigestValue>{digest_b64}</DigestValue>'
+                '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod>'
+                '<DigestValue>{digest}</DigestValue>'
                 '</Reference>'
                 '</SignedInfo>'
             )
             
-            # Canonicaliza SignedInfo para assinatura
-            signed_info_elem = etree.fromstring(signed_info_str.encode('utf-8'))
+            signed_info_xml = signed_info_template.format(uri=id_value, digest=digest_b64)
+            
+            # Parse e canonicaliza SignedInfo
+            signed_info_elem = etree.fromstring(signed_info_xml.encode('utf-8'))
             signed_info_c14n = etree.tostring(signed_info_elem, method='c14n', exclusive=False, with_comments=False)
             
             # Assina SignedInfo com a chave privada
-            signature_value = self.private_key.sign(
+            signature_bytes = self.private_key.sign(
                 signed_info_c14n,
                 padding.PKCS1v15(),
                 hashes.SHA1()
             )
-            signature_b64 = base64.b64encode(signature_value).decode()
+            signature_b64 = base64.b64encode(signature_bytes).decode()
             
-            # Obtém certificado em base64 (DER format)
+            # Certificado em base64 (DER format)
             cert_der = self.certificate.public_bytes(serialization.Encoding.DER)
             cert_b64 = base64.b64encode(cert_der).decode()
             
-            # Cria elemento Signature completo
-            # IMPORTANTE: O SignedInfo dentro do Signature NÃO deve ter xmlns
-            signed_info_no_ns = (
+            # Monta Signature completo
+            # IMPORTANTE: SignedInfo dentro de Signature NÃO tem xmlns próprio (herda do pai)
+            signature_template = (
+                '<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">'
                 '<SignedInfo>'
-                '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>'
-                '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>'
-                f'<Reference URI="#{id_value}">'
+                '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod>'
+                '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod>'
+                '<Reference URI="#{uri}">'
                 '<Transforms>'
-                '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>'
-                '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>'
+                '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></Transform>'
+                '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></Transform>'
                 '</Transforms>'
-                '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>'
-                f'<DigestValue>{digest_b64}</DigestValue>'
+                '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod>'
+                '<DigestValue>{digest}</DigestValue>'
                 '</Reference>'
                 '</SignedInfo>'
+                '<SignatureValue>{signature}</SignatureValue>'
+                '<KeyInfo>'
+                '<X509Data>'
+                '<X509Certificate>{cert}</X509Certificate>'
+                '</X509Data>'
+                '</KeyInfo>'
+                '</Signature>'
             )
             
-            signature_xml = (
-                f'<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">'
-                f'{signed_info_no_ns}'
-                f'<SignatureValue>{signature_b64}</SignatureValue>'
-                f'<KeyInfo>'
-                f'<X509Data>'
-                f'<X509Certificate>{cert_b64}</X509Certificate>'
-                f'</X509Data>'
-                f'</KeyInfo>'
-                f'</Signature>'
+            signature_xml = signature_template.format(
+                uri=id_value,
+                digest=digest_b64,
+                signature=signature_b64,
+                cert=cert_b64
             )
             
-            # Insere Signature após infNFe
-            signature_parsed = etree.fromstring(signature_xml.encode('utf-8'))
-            inf_nfe.addnext(signature_parsed)
+            # Parse e insere Signature após infNFe
+            signature_elem = etree.fromstring(signature_xml.encode('utf-8'))
+            inf_nfe.addnext(signature_elem)
             
             # Converte para string sem pretty print
             xml_assinado = etree.tostring(root, encoding='unicode')
