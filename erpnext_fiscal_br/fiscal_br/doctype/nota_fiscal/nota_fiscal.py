@@ -22,8 +22,8 @@ class NotaFiscal(Document):
     def before_insert(self):
         # Sempre busca ambiente da configuração fiscal
         self.definir_ambiente()
-        if not self.numero:
-            self.obter_proximo_numero()
+        # Sempre obtém próximo número disponível para novas notas
+        self.obter_proximo_numero()
     
     def definir_ambiente(self):
         """Define o ambiente a partir da configuração fiscal da empresa"""
@@ -412,7 +412,7 @@ def duplicar_nota_fiscal(nota_fiscal):
     # Cria nova nota
     nova_nf = frappe.new_doc("Nota Fiscal")
     
-    # Copia campos principais
+    # Copia campos principais (NÃO inclui numero e serie - serão obtidos automaticamente)
     campos_copiar = [
         'modelo', 'empresa', 'sales_invoice',
         'cliente', 'cliente_nome', 'cpf_cnpj_destinatario', 
@@ -433,7 +433,7 @@ def duplicar_nota_fiscal(nota_fiscal):
     # Status inicial
     nova_nf.status = 'Rascunho'
     
-    # Limpa campos que não devem ser copiados
+    # Força numero e serie como None para que before_insert obtenha o próximo disponível
     nova_nf.numero = None
     nova_nf.serie = None
     nova_nf.chave_acesso = None
