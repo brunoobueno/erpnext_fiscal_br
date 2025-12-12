@@ -55,9 +55,9 @@ class CertificadoDigital(Document):
             if certificate is None:
                 frappe.throw(_("Não foi possível carregar o certificado"))
             
-            # Extrai informações
-            self.validade_inicio = certificate.not_valid_before_utc
-            self.validade_fim = certificate.not_valid_after_utc
+            # Extrai informações (remove timezone para compatibilidade com MySQL)
+            self.validade_inicio = certificate.not_valid_before_utc.replace(tzinfo=None)
+            self.validade_fim = certificate.not_valid_after_utc.replace(tzinfo=None)
             self.serial_number = str(certificate.serial_number)
             
             # Extrai o subject (razão social e CNPJ)
