@@ -10,31 +10,40 @@ frappe.ui.form.on("Sales Order", {
             return;
         }
 
-        // Verifica se tem Sales Invoice vinculada
+        // Verifica se tem Sales Invoice vinculada através dos itens
         frappe.call({
-            method: "frappe.client.get_count",
+            method: "frappe.client.get_list",
             args: {
-                doctype: "Sales Invoice",
+                doctype: "Sales Invoice Item",
                 filters: {
                     "sales_order": frm.doc.name,
                     "docstatus": 1
-                }
+                },
+                fields: ["parent"],
+                limit_page_length: 100
             },
             callback: function(r) {
-                if (r.message && r.message > 0) {
+                // Extrai faturas únicas
+                let invoices_set = new Set();
+                if (r.message) {
+                    r.message.forEach(item => invoices_set.add(item.parent));
+                }
+                let invoice_names = Array.from(invoices_set);
+
+                if (invoice_names.length > 0) {
                     // Tem fatura - mostra botão para emitir NF da fatura
                     frm.add_custom_button(__("Emitir NFe da Fatura"), function() {
-                        // Busca a fatura vinculada
+                        // Busca detalhes das faturas
                         frappe.call({
                             method: "frappe.client.get_list",
                             args: {
                                 doctype: "Sales Invoice",
                                 filters: {
-                                    "sales_order": frm.doc.name,
+                                    "name": ["in", invoice_names],
                                     "docstatus": 1
                                 },
                                 fields: ["name", "nota_fiscal", "status_fiscal"],
-                                limit_page_length: 10
+                                limit_page_length: 100
                             },
                             callback: function(inv) {
                                 if (inv.message && inv.message.length > 0) {

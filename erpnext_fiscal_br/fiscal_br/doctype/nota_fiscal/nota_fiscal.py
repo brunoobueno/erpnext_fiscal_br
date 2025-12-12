@@ -12,6 +12,9 @@ from datetime import datetime, timedelta
 
 class NotaFiscal(Document):
     def validate(self):
+        # Define ambiente da configuração fiscal se ainda não definido ou se for Rascunho
+        if self.status in ["Rascunho", "Pendente"] or not self.ambiente:
+            self.definir_ambiente()
         self.validar_destinatario()
         self.validar_itens()
         self.calcular_totais()
