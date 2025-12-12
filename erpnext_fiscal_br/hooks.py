@@ -32,6 +32,7 @@ app_include_js = "/assets/erpnext_fiscal_br/js/fiscal_br.js"
 # include js in doctype views
 doctype_js = {
     "Sales Invoice": "public/js/sales_invoice.js",
+    "Sales Order": "public/js/sales_order.js",
     "Customer": "public/js/customer.js",
     "Item": "public/js/item.js",
     "Company": "public/js/company.js",

@@ -17,8 +17,21 @@ class NotaFiscal(Document):
         self.calcular_totais()
     
     def before_insert(self):
+        # Sempre busca ambiente da configuração fiscal
+        self.definir_ambiente()
         if not self.numero:
             self.obter_proximo_numero()
+    
+    def definir_ambiente(self):
+        """Define o ambiente a partir da configuração fiscal da empresa"""
+        if not self.empresa:
+            return
+        
+        from erpnext_fiscal_br.fiscal_br.doctype.configuracao_fiscal.configuracao_fiscal import ConfiguracaoFiscal
+        
+        config = ConfiguracaoFiscal.get_config_for_company(self.empresa)
+        if config and config.ambiente:
+            self.ambiente = config.ambiente
     
     def validar_destinatario(self):
         """Valida os dados do destinatário"""
