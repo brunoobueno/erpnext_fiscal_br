@@ -450,7 +450,7 @@ def duplicar_nota_fiscal(nota_fiscal):
     for item_original in nf_original.itens:
         novo_item = nova_nf.append('itens', {})
         campos_item = [
-            'item_code', 'descricao', 'item_name', 'ncm', 'cest', 'cfop', 
+            'item_code', 'item_name', 'ncm', 'cest', 'cfop', 
             'unidade', 'quantidade', 'valor_unitario', 'valor_total', 'valor_desconto',
             'origem', 'cst_icms', 'base_icms', 'aliquota_icms', 'valor_icms',
             'base_icms_st', 'aliquota_icms_st', 'valor_icms_st',
@@ -463,9 +463,9 @@ def duplicar_nota_fiscal(nota_fiscal):
             if hasattr(item_original, campo) and getattr(item_original, campo) is not None:
                 setattr(novo_item, campo, getattr(item_original, campo))
         
-        # Garante que descrição tenha valor
-        if not novo_item.descricao:
-            novo_item.descricao = novo_item.item_name or novo_item.item_code or "Item"
+        # Garante que item_name (Descrição) tenha valor
+        if not novo_item.item_name:
+            novo_item.item_name = novo_item.item_code or "Item"
     
     # Salva nova nota
     nova_nf.insert(ignore_permissions=True)
