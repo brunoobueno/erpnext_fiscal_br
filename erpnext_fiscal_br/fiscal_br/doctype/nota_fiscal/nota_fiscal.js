@@ -170,7 +170,20 @@ frappe.ui.form.on('Nota Fiscal', {
                 callback: function(r) {
                     if (r.message) {
                         frm.set_value('ambiente', r.message.ambiente);
-                        frm.set_value('serie', frm.doc.modelo === '65' ? r.message.serie_nfce : r.message.serie_nfe);
+                        let modelo = frm.doc.modelo || '55';
+                        if (modelo === '65') {
+                            frm.set_value('serie', r.message.serie_nfce);
+                            frm.set_value('numero', r.message.proximo_numero_nfce);
+                        } else {
+                            frm.set_value('serie', r.message.serie_nfe);
+                            frm.set_value('numero', r.message.proximo_numero_nfe);
+                        }
+                    } else {
+                        frappe.msgprint({
+                            title: __('Configuração Fiscal'),
+                            indicator: 'orange',
+                            message: __('Configuração fiscal não encontrada para a empresa {0}. Por favor, cadastre a configuração fiscal antes de emitir notas.', [frm.doc.empresa])
+                        });
                     }
                 }
             });

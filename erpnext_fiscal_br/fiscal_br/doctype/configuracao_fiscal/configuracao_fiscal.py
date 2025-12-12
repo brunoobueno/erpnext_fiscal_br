@@ -132,12 +132,12 @@ def get_configuracao_fiscal(empresa):
         empresa: Nome da empresa
     
     Returns:
-        dict: Dados da configuração fiscal
+        dict: Dados da configuração fiscal ou None se não encontrada
     """
     config = ConfiguracaoFiscal.get_config_for_company(empresa)
     
     if not config:
-        frappe.throw(_("Configuração fiscal não encontrada para a empresa {0}").format(empresa))
+        return None
     
     return {
         "cnpj": config.cnpj,
