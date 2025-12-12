@@ -193,26 +193,33 @@ class SEFAZTransmitter:
     def _parse_response(self, response_xml, tag_retorno):
         """Parse da resposta da SEFAZ"""
         try:
-            # Remove namespaces para facilitar parse
-            response_xml = response_xml.replace('xmlns:', 'xmlns_')
-            root = etree.fromstring(response_xml.encode('utf-8'))
+            # Remove todos os namespaces para facilitar o parse
+            import re
+            # Remove declarações de namespace
+            clean_xml = re.sub(r'\sxmlns[^=]*="[^"]*"', '', response_xml)
+            # Remove prefixos de namespace nas tags
+            clean_xml = re.sub(r'<(/?)[\w]+:', r'<\1', clean_xml)
+            
+            root = etree.fromstring(clean_xml.encode('utf-8'))
             
             # Procura tag de retorno
             retorno = root.find(f'.//{tag_retorno}')
             if retorno is None:
-                # Tenta com namespace
+                # Tenta encontrar em qualquer lugar
                 for elem in root.iter():
-                    if tag_retorno in elem.tag:
+                    if elem.tag == tag_retorno or elem.tag.endswith(tag_retorno):
                         retorno = elem
                         break
             
             if retorno is None:
-                return {"cStat": "999", "xMotivo": "Resposta inválida da SEFAZ"}
+                # Log para debug
+                frappe.log_error(f"Tag {tag_retorno} não encontrada na resposta:\n{clean_xml[:2000]}", "SEFAZ Response Debug")
+                return {"cStat": "999", "xMotivo": f"Resposta inválida da SEFAZ - tag {tag_retorno} não encontrada"}
             
             resultado = {}
             
             # Extrai campos principais
-            for campo in ['cStat', 'xMotivo', 'nProt', 'dhRecbto', 'chNFe', 'cUF', 'tpAmb']:
+            for campo in ['cStat', 'xMotivo', 'nProt', 'dhRecbto', 'chNFe', 'cUF', 'tpAmb', 'nRec']:
                 elem = retorno.find(f'.//{campo}')
                 if elem is not None and elem.text:
                     resultado[campo] = elem.text
@@ -230,7 +237,7 @@ class SEFAZTransmitter:
             return resultado
             
         except Exception as e:
-            frappe.log_error(f"Erro ao parsear resposta SEFAZ: {str(e)}\n{response_xml}")
+            frappe.log_error(f"Erro ao parsear resposta SEFAZ: {str(e)}\n{response_xml[:2000]}", "SEFAZ Parse Error")
             return {"cStat": "999", "xMotivo": f"Erro ao processar resposta: {str(e)}"}
     
     def consultar_status_servico(self):

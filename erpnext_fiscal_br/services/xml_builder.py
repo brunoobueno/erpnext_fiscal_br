@@ -65,9 +65,8 @@ class XMLBuilder:
         self._add_pag(inf_nfe)
         self._add_inf_adic(inf_nfe)
         
-        # Para NFCe, adiciona infNFeSupl
-        if self.nf.modelo == "65":
-            self._add_inf_nfe_supl(nfe)
+        # Para NFCe, adiciona infNFeSupl (depois da assinatura, não aqui)
+        # O infNFeSupl será adicionado após a assinatura do XML
         
         # Converte para string
         xml_str = etree.tostring(nfe, encoding="unicode", pretty_print=True)
@@ -145,9 +144,6 @@ class XMLBuilder:
         # Indicador de presença (0=Não se aplica, 1=Presencial, 2=Internet, etc)
         ind_pres = "1" if self.nf.modelo == "65" else "0"
         self._add_element(ide, "indPres", ind_pres)
-        
-        # Indicador de intermediador (0=Sem intermediador)
-        self._add_element(ide, "indIntermed", "0")
         
         # Processo de emissão (0=Aplicativo do contribuinte)
         self._add_element(ide, "procEmi", "0")
@@ -280,7 +276,7 @@ class XMLBuilder:
             self._add_imposto(det, item)
             
             # Informações adicionais do item
-            if item.informacoes_adicionais:
+            if hasattr(item, 'informacoes_adicionais') and item.informacoes_adicionais:
                 self._add_element(det, "infAdProd", item.informacoes_adicionais[:500])
     
     def _add_prod(self, parent, item):
@@ -495,9 +491,10 @@ class XMLBuilder:
         ipi = etree.SubElement(parent, "IPI")
         
         # Código de enquadramento
-        self._add_element(ipi, "cEnq", item.codigo_enquadramento_ipi or "999")
+        cEnq = getattr(item, 'codigo_enquadramento_ipi', None) or "999"
+        self._add_element(ipi, "cEnq", cEnq)
         
-        cst = item.cst_ipi or "99"
+        cst = getattr(item, 'cst_ipi', None) or "53"
         
         if cst in ["00", "49", "50", "99"]:
             ipi_trib = etree.SubElement(ipi, "IPITrib")
