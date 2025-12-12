@@ -101,9 +101,29 @@ class NotaFiscal(Document):
         if not config:
             frappe.throw(_("Configuração fiscal não encontrada para a empresa {0}").format(self.empresa))
         
-        self.numero = config.get_proximo_numero(self.modelo)
         self.serie = config.get_serie(self.modelo)
         self.ambiente = config.ambiente
+        
+        # Busca o maior número já usado para esta série/modelo/empresa
+        maior_numero = frappe.db.sql("""
+            SELECT MAX(numero) as max_num
+            FROM `tabNota Fiscal`
+            WHERE empresa = %s AND modelo = %s AND serie = %s
+        """, (self.empresa, self.modelo, self.serie), as_dict=True)
+        
+        numero_existente = maior_numero[0].max_num if maior_numero and maior_numero[0].max_num else 0
+        
+        # Pega o maior entre o número da config e o maior existente + 1
+        numero_config = config.proximo_numero_nfe if self.modelo == "55" else config.proximo_numero_nfce
+        self.numero = max(numero_config, numero_existente + 1)
+        
+        # Atualiza a configuração se necessário
+        if self.numero >= numero_config:
+            if self.modelo == "55":
+                config.proximo_numero_nfe = self.numero + 1
+            else:
+                config.proximo_numero_nfce = self.numero + 1
+            config.save(ignore_permissions=True)
     
     def gerar_chave_acesso(self):
         """Gera a chave de acesso da NFe (44 dígitos)"""
