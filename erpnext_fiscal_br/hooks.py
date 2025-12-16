@@ -12,12 +12,12 @@ required_apps = ["frappe", "erpnext"]
 # ------------------
 
 # include js, css files in header of desk.html
-# Carrega arquivos diretamente sem bundling para evitar conflitos
+# Usa path /assets/ que é o padrão do Frappe para servir arquivos estáticos
 app_include_css = [
-    "erpnext_fiscal_br/public/css/fiscal_br.css"
+    "/assets/erpnext_fiscal_br/css/fiscal_br.css"
 ]
 app_include_js = [
-    "erpnext_fiscal_br/public/js/fiscal_br.js"
+    "/assets/erpnext_fiscal_br/js/fiscal_br.js"
 ]
 
 # include js, css files in header of web template
