@@ -78,7 +78,8 @@ class XMLSigner:
                 xml_clean = xml_clean.split('?>', 1)[1].strip()
             
             # Parse do XML
-            root = etree.fromstring(xml_clean.encode('utf-8'))
+            parser = etree.XMLParser(remove_blank_text=True)
+            root = etree.fromstring(xml_clean.encode('utf-8'), parser)
             
             # Encontra o elemento a ser assinado (infNFe)
             ns = {'nfe': 'http://www.portalfiscal.inf.br/nfe'}
@@ -103,6 +104,9 @@ class XMLSigner:
             )
             
             # Configura o assinador - NFe usa enveloped signature
+            # Importante: assinar o elemento NFe (parent do infNFe), não o infNFe diretamente
+            nfe_element = inf_nfe.getparent()
+            
             signer = SignXMLSigner(
                 method=methods.enveloped,
                 signature_algorithm="rsa-sha1",
@@ -110,22 +114,30 @@ class XMLSigner:
                 c14n_algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
             )
             
-            # Assina especificamente o elemento infNFe
-            signed_inf_nfe = signer.sign(
-                inf_nfe,
+            # Assina o elemento NFe referenciando o infNFe pelo Id
+            signed_nfe = signer.sign(
+                nfe_element,
                 key=key_pem,
                 cert=cert_pem,
                 reference_uri=f"#{id_value}" if id_value else ""
             )
             
-            # Substitui o infNFe original pelo assinado
-            parent = inf_nfe.getparent()
-            index = list(parent).index(inf_nfe)
-            parent.remove(inf_nfe)
-            parent.insert(index, signed_inf_nfe)
+            # Se o root é o próprio NFe, usa o signed_nfe como root
+            if root.tag == nfe_element.tag:
+                final_root = signed_nfe
+            else:
+                # Substitui o NFe original pelo assinado
+                parent = nfe_element.getparent()
+                if parent is not None:
+                    index = list(parent).index(nfe_element)
+                    parent.remove(nfe_element)
+                    parent.insert(index, signed_nfe)
+                    final_root = root
+                else:
+                    final_root = signed_nfe
             
             # Converte para string sem formatação
-            xml_assinado = etree.tostring(root, encoding='unicode')
+            xml_assinado = etree.tostring(final_root, encoding='unicode')
             
             # Adiciona declaração XML
             xml_assinado = '<?xml version="1.0" encoding="UTF-8"?>' + xml_assinado
