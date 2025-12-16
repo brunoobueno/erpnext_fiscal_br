@@ -50,8 +50,8 @@ class XMLBuilder:
         # Elemento raiz com namespace
         nfe = etree.Element("{%s}NFe" % NAMESPACE_NFE, nsmap=NSMAP)
         
-        # infNFe - Informações da NFe (usa namespace explícito para consistência)
-        inf_nfe = etree.SubElement(nfe, "{%s}infNFe" % NAMESPACE_NFE)
+        # infNFe - Informações da NFe (herda namespace do pai)
+        inf_nfe = etree.SubElement(nfe, "infNFe")
         inf_nfe.set("versao", "4.00")
         inf_nfe.set("Id", f"NFe{self.nf.chave_acesso}")
         
