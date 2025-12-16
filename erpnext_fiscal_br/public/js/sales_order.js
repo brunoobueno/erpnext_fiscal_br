@@ -10,127 +10,50 @@ frappe.ui.form.on("Sales Order", {
             return;
         }
 
-        // Adiciona botão direto para criar NF (sempre visível em pedidos submetidos)
-        frm.add_custom_button(__("Gerar Nota Fiscal"), function() {
-            // Verifica se já tem fatura vinculada
-            frappe.call({
-                method: "frappe.client.get_list",
-                args: {
-                    doctype: "Sales Invoice Item",
-                    filters: {
-                        "sales_order": frm.doc.name,
-                        "docstatus": 1
-                    },
-                    fields: ["parent"],
-                    limit_page_length: 1
-                },
-                callback: function(r) {
-                    if (r.message && r.message.length > 0) {
-                        // Tem fatura - pergunta se quer emitir NF dela
-                        let invoice = r.message[0].parent;
-                        frappe.confirm(
-                            __("Este pedido já possui a fatura {0}. Deseja emitir a NFe desta fatura?", [invoice]),
-                            function() {
-                                emitir_nfe_from_invoice(invoice);
-                            }
-                        );
+        // Usa API whitelisted para evitar problemas de permissão
+        frappe.call({
+            method: "erpnext_fiscal_br.api.nfe.get_invoices_from_sales_order",
+            args: {
+                sales_order: frm.doc.name
+            },
+            callback: function(r) {
+                let invoices = r.message || [];
+
+                // Botão principal - Gerar Nota Fiscal
+                frm.add_custom_button(__("Gerar Nota Fiscal"), function() {
+                    if (invoices.length > 0) {
+                        // Tem fatura - verifica se já tem NF
+                        let invoices_sem_nf = invoices.filter(i => !i.nota_fiscal);
+                        
+                        if (invoices_sem_nf.length === 0) {
+                            frappe.msgprint(__("Todas as faturas deste pedido já possuem NFe emitida."));
+                            return;
+                        }
+                        
+                        if (invoices_sem_nf.length === 1) {
+                            emitir_nfe_from_invoice(invoices_sem_nf[0].name);
+                        } else {
+                            // Múltiplas faturas - deixa escolher
+                            frappe.prompt({
+                                fieldname: "invoice",
+                                label: __("Selecione a Fatura"),
+                                fieldtype: "Select",
+                                options: invoices_sem_nf.map(i => i.name).join("\n"),
+                                reqd: 1
+                            }, function(values) {
+                                emitir_nfe_from_invoice(values.invoice);
+                            }, __("Emitir NFe"), __("Emitir"));
+                        }
                     } else {
                         // Não tem fatura - cria uma
                         frappe.confirm(
-                            __("Deseja criar uma Fatura e gerar a Nota Fiscal para este pedido?"),
+                            __("Este pedido não possui fatura. Deseja criar uma Fatura primeiro?"),
                             function() {
                                 criar_fatura_e_emitir_nfe(frm);
                             }
                         );
                     }
-                }
-            });
-        }, __("Fiscal BR"));
-
-        // Verifica se tem Sales Invoice vinculada através dos itens
-        frappe.call({
-            method: "frappe.client.get_list",
-            args: {
-                doctype: "Sales Invoice Item",
-                filters: {
-                    "sales_order": frm.doc.name,
-                    "docstatus": 1
-                },
-                fields: ["parent"],
-                limit_page_length: 100
-            },
-            callback: function(r) {
-                // Extrai faturas únicas
-                let invoices_set = new Set();
-                if (r.message) {
-                    r.message.forEach(item => invoices_set.add(item.parent));
-                }
-                let invoice_names = Array.from(invoices_set);
-
-                if (invoice_names.length > 0) {
-                    // Tem fatura - mostra botão para emitir NF da fatura
-                    frm.add_custom_button(__("Emitir NFe da Fatura"), function() {
-                        // Busca detalhes das faturas
-                        frappe.call({
-                            method: "frappe.client.get_list",
-                            args: {
-                                doctype: "Sales Invoice",
-                                filters: {
-                                    "name": ["in", invoice_names],
-                                    "docstatus": 1
-                                },
-                                fields: ["name", "nota_fiscal", "status_fiscal"],
-                                limit_page_length: 100
-                            },
-                            callback: function(inv) {
-                                if (inv.message && inv.message.length > 0) {
-                                    let invoices = inv.message;
-                                    
-                                    if (invoices.length === 1) {
-                                        // Uma fatura - emite direto
-                                        let invoice = invoices[0];
-                                        if (invoice.nota_fiscal) {
-                                            frappe.msgprint(__("Esta fatura já possui NFe: {0}", [invoice.nota_fiscal]));
-                                            return;
-                                        }
-                                        emitir_nfe_from_invoice(invoice.name);
-                                    } else {
-                                        // Múltiplas faturas - deixa escolher
-                                        let options = invoices.filter(i => !i.nota_fiscal).map(i => ({
-                                            label: i.name + (i.status_fiscal ? ` (${i.status_fiscal})` : ''),
-                                            value: i.name
-                                        }));
-                                        
-                                        if (options.length === 0) {
-                                            frappe.msgprint(__("Todas as faturas já possuem NFe"));
-                                            return;
-                                        }
-                                        
-                                        frappe.prompt({
-                                            fieldname: "invoice",
-                                            label: __("Selecione a Fatura"),
-                                            fieldtype: "Select",
-                                            options: options.map(o => o.value).join("\n"),
-                                            reqd: 1
-                                        }, function(values) {
-                                            emitir_nfe_from_invoice(values.invoice);
-                                        }, __("Emitir NFe"), __("Emitir"));
-                                    }
-                                }
-                            }
-                        });
-                    }, __("Nota Fiscal"));
-                } else {
-                    // Não tem fatura - mostra opção de criar fatura e emitir
-                    frm.add_custom_button(__("Criar Fatura e Emitir NFe"), function() {
-                        frappe.confirm(
-                            __("Deseja criar uma Fatura (Sales Invoice) e emitir a NFe para este pedido?"),
-                            function() {
-                                criar_fatura_e_emitir_nfe(frm);
-                            }
-                        );
-                    }, __("Nota Fiscal"));
-                }
+                }, __("Fiscal BR"));
             }
         });
     }

@@ -11,6 +11,22 @@ from erpnext_fiscal_br.utils.ibge import get_codigo_uf, get_codigo_municipio
 
 
 @frappe.whitelist()
+def get_invoices_from_sales_order(sales_order):
+    """
+    Retorna as faturas vinculadas a um pedido de venda
+    Esta função é whitelisted para evitar problemas de permissão no frontend
+    """
+    invoices = frappe.db.sql("""
+        SELECT DISTINCT si.name, si.nota_fiscal, si.status_fiscal
+        FROM `tabSales Invoice` si
+        INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
+        WHERE sii.sales_order = %s AND si.docstatus = 1
+    """, sales_order, as_dict=True)
+    
+    return invoices
+
+
+@frappe.whitelist()
 def criar_nfe_from_sales_invoice(sales_invoice, modelo="55"):
     """
     Cria uma Nota Fiscal a partir de uma Sales Invoice
