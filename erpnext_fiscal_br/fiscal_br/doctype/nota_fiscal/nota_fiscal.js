@@ -234,21 +234,16 @@ frappe.ui.form.on('Nota Fiscal', {
                         frm.set_value('cliente_nome', r.message.customer_name);
                         frm.set_value('cpf_cnpj_destinatario', r.message.tax_id || '');
                         
-                        // Busca endereço principal
+                        // Busca endereço principal usando frappe.contacts.address_and_contact
                         frappe.call({
-                            method: 'frappe.client.get_list',
+                            method: 'frappe.contacts.doctype.address.address.get_default_address',
                             args: {
-                                doctype: 'Address',
-                                filters: {
-                                    link_doctype: 'Customer',
-                                    link_name: frm.doc.cliente
-                                },
-                                fields: ['name'],
-                                limit_page_length: 1
+                                doctype: 'Customer',
+                                name: frm.doc.cliente
                             },
                             callback: function(addr) {
-                                if (addr.message && addr.message.length > 0) {
-                                    frm.set_value('endereco_destinatario', addr.message[0].name);
+                                if (addr.message) {
+                                    frm.set_value('endereco_destinatario', addr.message);
                                     frm.trigger('endereco_destinatario');
                                 }
                             }
