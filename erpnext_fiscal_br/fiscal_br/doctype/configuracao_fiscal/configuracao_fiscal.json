@@ -398,6 +398,14 @@
             "report": 1,
             "role": "Fiscal User",
             "share": 1
+        },
+        {
+            "read": 1,
+            "role": "Sales Manager"
+        },
+        {
+            "read": 1,
+            "role": "Accounts Manager"
         }
     ],
     "sort_field": "modified",
