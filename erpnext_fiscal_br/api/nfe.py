@@ -59,6 +59,67 @@ def test_assinatura(nota_fiscal):
 
 
 @frappe.whitelist()
+def test_transmissao(nota_fiscal):
+    """
+    Testa a transmissão completa de uma nota fiscal para debug
+    """
+    try:
+        nf = frappe.get_doc("Nota Fiscal", nota_fiscal)
+        
+        # Gera XML
+        from erpnext_fiscal_br.services.xml_builder import XMLBuilder
+        builder = XMLBuilder(nf)
+        xml = builder.build()
+        
+        # Assina
+        from erpnext_fiscal_br.services.signer import XMLSigner
+        signer = XMLSigner(nf.empresa)
+        xml_assinado = signer.sign(xml)
+        
+        # Prepara para transmissão (simula o que o transmitter faz)
+        xml_nfe = xml_assinado
+        if xml_nfe.startswith('<?xml'):
+            xml_nfe = xml_nfe.split('?>', 1)[1].strip()
+        
+        from frappe.utils import now_datetime
+        id_lote = str(int(now_datetime().timestamp()))[-15:]
+        
+        # Monta o envelope
+        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4"><enviNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><idLote>{id_lote}</idLote><indSinc>1</indSinc>{xml_nfe}</enviNFe></nfeDadosMsg>'
+        
+        # Transmite
+        from erpnext_fiscal_br.services.transmitter import SEFAZTransmitter
+        transmitter = SEFAZTransmitter(nf.empresa)
+        
+        url = transmitter._get_url("NfeAutorizacao", nf.modelo)
+        
+        response = transmitter._send_request(
+            url, 
+            xml_body, 
+            "http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4/nfeAutorizacaoLote"
+        )
+        
+        resultado = transmitter._parse_response(response, "retEnviNFe")
+        
+        return {
+            "success": resultado.get("cStat") in ["100", "150"],
+            "cStat": resultado.get("cStat"),
+            "xMotivo": resultado.get("xMotivo"),
+            "nProt": resultado.get("nProt"),
+            "url": url,
+            "xml_length": len(xml_body)
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "success": False, 
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+@frappe.whitelist()
 def get_invoices_from_sales_order(sales_order):
     """
     Retorna as faturas vinculadas a um pedido de venda
