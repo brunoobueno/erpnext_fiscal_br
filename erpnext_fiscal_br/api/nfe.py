@@ -76,38 +76,85 @@ def test_transmissao(nota_fiscal):
         signer = XMLSigner(nf.empresa)
         xml_assinado = signer.sign(xml)
         
-        # Prepara para transmissão (simula o que o transmitter faz)
-        xml_nfe = xml_assinado
-        if xml_nfe.startswith('<?xml'):
-            xml_nfe = xml_nfe.split('?>', 1)[1].strip()
-        
-        from frappe.utils import now_datetime
-        id_lote = str(int(now_datetime().timestamp()))[-15:]
-        
-        # Monta o envelope
-        xml_body = f'<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4"><enviNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><idLote>{id_lote}</idLote><indSinc>1</indSinc>{xml_nfe}</enviNFe></nfeDadosMsg>'
-        
-        # Transmite
+        # Transmite usando o transmitter diretamente
         from erpnext_fiscal_br.services.transmitter import SEFAZTransmitter
         transmitter = SEFAZTransmitter(nf.empresa)
         
-        url = transmitter._get_url("NfeAutorizacao", nf.modelo)
-        
-        response = transmitter._send_request(
-            url, 
-            xml_body, 
-            "http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4/nfeAutorizacaoLote"
-        )
-        
-        resultado = transmitter._parse_response(response, "retEnviNFe")
+        resultado = transmitter.enviar_nfe(xml_assinado, nf.modelo)
         
         return {
             "success": resultado.get("cStat") in ["100", "150"],
             "cStat": resultado.get("cStat"),
             "xMotivo": resultado.get("xMotivo"),
-            "nProt": resultado.get("nProt"),
-            "url": url,
-            "xml_length": len(xml_body)
+            "nProt": resultado.get("nProt")
+        }
+        
+    except Exception as e:
+        import traceback
+        return {
+            "success": False, 
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+@frappe.whitelist()
+def debug_xml(nota_fiscal):
+    """
+    Retorna informações detalhadas do XML para debug
+    """
+    try:
+        import hashlib
+        import base64
+        from lxml import etree
+        
+        nf = frappe.get_doc("Nota Fiscal", nota_fiscal)
+        
+        # Gera XML
+        from erpnext_fiscal_br.services.xml_builder import XMLBuilder
+        builder = XMLBuilder(nf)
+        xml = builder.build()
+        
+        # Parse para extrair infNFe
+        xml_clean = xml
+        if xml_clean.startswith('<?xml'):
+            xml_clean = xml_clean.split('?>', 1)[1].strip()
+        
+        parser = etree.XMLParser(remove_blank_text=True)
+        root = etree.fromstring(xml_clean.encode('utf-8'), parser)
+        
+        # Encontra infNFe
+        NS_NFE = 'http://www.portalfiscal.inf.br/nfe'
+        inf_nfe = root.find('.//{%s}infNFe' % NS_NFE)
+        
+        if inf_nfe is None:
+            return {"error": "infNFe não encontrado"}
+        
+        # Canonicaliza
+        c14n = etree.tostring(inf_nfe, method='c14n', exclusive=False, with_comments=False)
+        
+        # Calcula digest
+        digest = hashlib.sha1(c14n).digest()
+        digest_b64 = base64.b64encode(digest).decode('ascii')
+        
+        # Assina
+        from erpnext_fiscal_br.services.signer import XMLSigner
+        signer = XMLSigner(nf.empresa)
+        xml_assinado = signer.sign(xml)
+        
+        # Extrai digest do XML assinado
+        import re
+        digest_match = re.search(r'<DigestValue>([^<]+)</DigestValue>', xml_assinado)
+        digest_assinado = digest_match.group(1) if digest_match else "N/A"
+        
+        return {
+            "id_value": inf_nfe.get('Id'),
+            "c14n_length": len(c14n),
+            "c14n_first_100": c14n[:100].decode('utf-8'),
+            "c14n_last_100": c14n[-100:].decode('utf-8'),
+            "digest_calculado": digest_b64,
+            "digest_no_xml": digest_assinado,
+            "digests_iguais": digest_b64 == digest_assinado
         }
         
     except Exception as e:
