@@ -11,6 +11,44 @@ from erpnext_fiscal_br.utils.ibge import get_codigo_uf, get_codigo_municipio
 
 
 @frappe.whitelist()
+def test_assinatura(nota_fiscal):
+    """
+    Testa a assinatura de uma nota fiscal para debug
+    """
+    try:
+        nf = frappe.get_doc("Nota Fiscal", nota_fiscal)
+        
+        # Gera XML
+        from erpnext_fiscal_br.services.xml_builder import XMLBuilder
+        builder = XMLBuilder(nf)
+        xml = builder.build()
+        
+        frappe.log_error(f"XML gerado (primeiros 500 chars): {xml[:500]}", "Test Assinatura - XML")
+        
+        # Tenta assinar
+        from erpnext_fiscal_br.services.signer import XMLSigner
+        signer = XMLSigner(nf.empresa)
+        
+        frappe.log_error(f"Certificado carregado para empresa: {nf.empresa}", "Test Assinatura - Cert")
+        
+        xml_assinado = signer.sign(xml)
+        
+        frappe.log_error(f"XML assinado (primeiros 500 chars): {xml_assinado[:500]}", "Test Assinatura - Assinado")
+        
+        # Verifica se Signature está presente
+        if "<Signature" in xml_assinado:
+            frappe.log_error("Signature encontrada no XML", "Test Assinatura - OK")
+            return {"success": True, "message": "Assinatura gerada com sucesso. Verifique Error Log para detalhes."}
+        else:
+            frappe.log_error("Signature NÃO encontrada no XML", "Test Assinatura - ERRO")
+            return {"success": False, "message": "Signature não encontrada no XML assinado"}
+            
+    except Exception as e:
+        frappe.log_error(f"Erro no teste de assinatura: {str(e)}", "Test Assinatura - EXCEPTION")
+        return {"success": False, "error": str(e)}
+
+
+@frappe.whitelist()
 def get_invoices_from_sales_order(sales_order):
     """
     Retorna as faturas vinculadas a um pedido de venda
