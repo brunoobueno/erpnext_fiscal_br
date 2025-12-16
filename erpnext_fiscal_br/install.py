@@ -430,8 +430,16 @@ def get_custom_fields():
 def create_workspace():
     """Cria o workspace do módulo fiscal"""
     try:
+        # Se já existe, atualiza para garantir que os links estão corretos
         if frappe.db.exists("Workspace", "Fiscal BR"):
-            return
+            workspace = frappe.get_doc("Workspace", "Fiscal BR")
+            # Verifica se tem o link para Configuracao Fiscal
+            has_config = any(link.link_to == "Configuracao Fiscal" for link in workspace.links)
+            if has_config:
+                return
+            # Se não tem, deleta e recria
+            frappe.delete_doc("Workspace", "Fiscal BR", force=True)
+            frappe.db.commit()
         
         workspace = frappe.new_doc("Workspace")
         workspace.name = "Fiscal BR"

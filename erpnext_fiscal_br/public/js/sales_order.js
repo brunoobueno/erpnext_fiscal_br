@@ -10,6 +10,43 @@ frappe.ui.form.on("Sales Order", {
             return;
         }
 
+        // Adiciona botão direto para criar NF (sempre visível em pedidos submetidos)
+        frm.add_custom_button(__("Gerar Nota Fiscal"), function() {
+            // Verifica se já tem fatura vinculada
+            frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Sales Invoice Item",
+                    filters: {
+                        "sales_order": frm.doc.name,
+                        "docstatus": 1
+                    },
+                    fields: ["parent"],
+                    limit_page_length: 1
+                },
+                callback: function(r) {
+                    if (r.message && r.message.length > 0) {
+                        // Tem fatura - pergunta se quer emitir NF dela
+                        let invoice = r.message[0].parent;
+                        frappe.confirm(
+                            __("Este pedido já possui a fatura {0}. Deseja emitir a NFe desta fatura?", [invoice]),
+                            function() {
+                                emitir_nfe_from_invoice(invoice);
+                            }
+                        );
+                    } else {
+                        // Não tem fatura - cria uma
+                        frappe.confirm(
+                            __("Deseja criar uma Fatura e gerar a Nota Fiscal para este pedido?"),
+                            function() {
+                                criar_fatura_e_emitir_nfe(frm);
+                            }
+                        );
+                    }
+                }
+            });
+        }, __("Fiscal BR"));
+
         // Verifica se tem Sales Invoice vinculada através dos itens
         frappe.call({
             method: "frappe.client.get_list",
