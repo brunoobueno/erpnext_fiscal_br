@@ -47,11 +47,11 @@ class XMLBuilder:
         Returns:
             str: XML da NFe
         """
-        # Elemento raiz
+        # Elemento raiz com namespace
         nfe = etree.Element("{%s}NFe" % NAMESPACE_NFE, nsmap=NSMAP)
         
-        # infNFe - Informações da NFe
-        inf_nfe = etree.SubElement(nfe, "infNFe")
+        # infNFe - Informações da NFe (usa namespace explícito para consistência)
+        inf_nfe = etree.SubElement(nfe, "{%s}infNFe" % NAMESPACE_NFE)
         inf_nfe.set("versao", "4.00")
         inf_nfe.set("Id", f"NFe{self.nf.chave_acesso}")
         

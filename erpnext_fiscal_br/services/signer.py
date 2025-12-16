@@ -64,10 +64,9 @@ class XMLSigner:
         Returns:
             str: XML assinado
         """
-        if not HAS_SIGNXML:
-            return self._sign_manual(xml_string)
-        
-        return self._sign_with_signxml(xml_string)
+        # Usa sempre o método manual que é mais confiável para NFe brasileira
+        # A biblioteca signxml pode ter incompatibilidades com o padrão da SEFAZ
+        return self._sign_manual(xml_string)
     
     def _sign_with_signxml(self, xml_string):
         """Assina usando a biblioteca signxml"""
@@ -151,81 +150,88 @@ class XMLSigner:
     
     def _sign_manual(self, xml_string):
         """
-        Assina XML manualmente (fallback)
+        Assina XML manualmente
         Implementação da assinatura XMLDSig para NFe conforme Manual de Orientação do Contribuinte
+        
+        A assinatura segue o padrão XML-DSig com:
+        - Algoritmo de canonicalização: C14N (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
+        - Algoritmo de assinatura: RSA-SHA1
+        - Algoritmo de digest: SHA1
+        - Transforms: enveloped-signature + C14N
         """
         try:
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.asymmetric import padding
-            from io import BytesIO
             
-            NSMAP = {
-                None: 'http://www.portalfiscal.inf.br/nfe',
-                'ds': 'http://www.w3.org/2000/09/xmldsig#'
-            }
-            NS_NFE = '{http://www.portalfiscal.inf.br/nfe}'
-            NS_DS = '{http://www.w3.org/2000/09/xmldsig#}'
+            NS_NFE = 'http://www.portalfiscal.inf.br/nfe'
+            NS_DS = 'http://www.w3.org/2000/09/xmldsig#'
             
             # Remove declaração XML se existir
             xml_clean = xml_string
             if xml_clean.startswith('<?xml'):
                 xml_clean = xml_clean.split('?>', 1)[1].strip()
             
-            # Parse do XML preservando namespaces
+            # Parse do XML - remove espaços em branco para canonicalização correta
             parser = etree.XMLParser(remove_blank_text=True)
             root = etree.fromstring(xml_clean.encode('utf-8'), parser)
             
-            # Encontra infNFe
-            inf_nfe = root.find(f'.//{NS_NFE}infNFe')
+            # Encontra infNFe (ou infEvento para eventos)
+            inf_nfe = root.find('.//{%s}infNFe' % NS_NFE)
             if inf_nfe is None:
+                # Tenta encontrar infEvento (para cancelamento, CCe, etc)
+                inf_nfe = root.find('.//{%s}infEvento' % NS_NFE)
+            if inf_nfe is None:
+                # Tenta encontrar infInut (para inutilização)
+                inf_nfe = root.find('.//{%s}infInut' % NS_NFE)
+            if inf_nfe is None:
+                # Tenta sem namespace
                 inf_nfe = root.find('.//infNFe')
+                if inf_nfe is None:
+                    inf_nfe = root.find('.//infEvento')
+                if inf_nfe is None:
+                    inf_nfe = root.find('.//infInut')
             
             if inf_nfe is None:
-                frappe.throw(_("Elemento infNFe não encontrado"))
+                frappe.throw(_("Elemento a ser assinado não encontrado no XML"))
             
             id_value = inf_nfe.get('Id')
             if not id_value:
-                frappe.throw(_("Atributo Id não encontrado no infNFe"))
+                frappe.throw(_("Atributo Id não encontrado no elemento"))
             
-            # PASSO 1: Canonicaliza infNFe para calcular o Digest
-            # Usa C14N inclusivo conforme especificação da NFe
-            c14n_inf_nfe = etree.tostring(inf_nfe, method='c14n', exclusive=False, with_comments=False)
+            # PASSO 1: Canonicaliza o elemento para calcular o Digest
+            # A canonicalização C14N transforma o XML em uma forma normalizada
+            c14n_element = etree.tostring(inf_nfe, method='c14n', exclusive=False, with_comments=False)
             
-            # Calcula digest SHA-1
-            digest = hashlib.sha1(c14n_inf_nfe).digest()
+            # Calcula digest SHA-1 do elemento canonicalizado
+            digest = hashlib.sha1(c14n_element).digest()
             digest_b64 = base64.b64encode(digest).decode('ascii')
             
-            # PASSO 2: Monta SignedInfo
-            # O SignedInfo deve ser montado exatamente como será canonicalizado
-            signed_info = etree.Element(f'{NS_DS}SignedInfo')
+            # PASSO 2: Monta SignedInfo como string XML
+            # Isso garante que o namespace seja declarado corretamente
+            signed_info_template = (
+                '<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#">'
+                '<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod>'
+                '<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod>'
+                '<Reference URI="#{uri}">'
+                '<Transforms>'
+                '<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></Transform>'
+                '<Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></Transform>'
+                '</Transforms>'
+                '<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod>'
+                '<DigestValue>{digest}</DigestValue>'
+                '</Reference>'
+                '</SignedInfo>'
+            )
             
-            c14n_method = etree.SubElement(signed_info, f'{NS_DS}CanonicalizationMethod')
-            c14n_method.set('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315')
+            signed_info_xml = signed_info_template.format(uri=id_value, digest=digest_b64)
             
-            sig_method = etree.SubElement(signed_info, f'{NS_DS}SignatureMethod')
-            sig_method.set('Algorithm', 'http://www.w3.org/2000/09/xmldsig#rsa-sha1')
+            # Parse SignedInfo para canonicalização
+            signed_info_elem = etree.fromstring(signed_info_xml.encode('utf-8'))
             
-            reference = etree.SubElement(signed_info, f'{NS_DS}Reference')
-            reference.set('URI', f'#{id_value}')
+            # PASSO 3: Canonicaliza SignedInfo para assinatura
+            signed_info_c14n = etree.tostring(signed_info_elem, method='c14n', exclusive=False, with_comments=False)
             
-            transforms = etree.SubElement(reference, f'{NS_DS}Transforms')
-            
-            transform1 = etree.SubElement(transforms, f'{NS_DS}Transform')
-            transform1.set('Algorithm', 'http://www.w3.org/2000/09/xmldsig#enveloped-signature')
-            
-            transform2 = etree.SubElement(transforms, f'{NS_DS}Transform')
-            transform2.set('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315')
-            
-            digest_method = etree.SubElement(reference, f'{NS_DS}DigestMethod')
-            digest_method.set('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1')
-            
-            digest_value = etree.SubElement(reference, f'{NS_DS}DigestValue')
-            digest_value.text = digest_b64
-            
-            # PASSO 3: Canonicaliza SignedInfo e assina
-            signed_info_c14n = etree.tostring(signed_info, method='c14n', exclusive=False, with_comments=False)
-            
-            # Assina com RSA-SHA1
+            # Assina o SignedInfo canonicalizado com RSA-SHA1
             signature_bytes = self.private_key.sign(
                 signed_info_c14n,
                 padding.PKCS1v15(),
@@ -233,24 +239,31 @@ class XMLSigner:
             )
             signature_b64 = base64.b64encode(signature_bytes).decode('ascii')
             
-            # PASSO 4: Monta elemento Signature completo
-            signature = etree.Element(f'{NS_DS}Signature')
-            signature.append(signed_info)
-            
-            sig_value = etree.SubElement(signature, f'{NS_DS}SignatureValue')
-            sig_value.text = signature_b64
-            
-            key_info = etree.SubElement(signature, f'{NS_DS}KeyInfo')
-            x509_data = etree.SubElement(key_info, f'{NS_DS}X509Data')
-            x509_cert = etree.SubElement(x509_data, f'{NS_DS}X509Certificate')
-            
-            # Certificado em base64 (DER)
+            # PASSO 4: Obtém certificado em base64
             cert_der = self.certificate.public_bytes(serialization.Encoding.DER)
-            x509_cert.text = base64.b64encode(cert_der).decode('ascii')
+            cert_b64 = base64.b64encode(cert_der).decode('ascii')
             
-            # PASSO 5: Insere Signature APÓS infNFe (dentro do elemento NFe)
-            # Conforme layout da NFe: <NFe><infNFe>...</infNFe><Signature>...</Signature></NFe>
-            inf_nfe.addnext(signature)
+            # PASSO 5: Monta elemento Signature completo como string
+            # Remove o xmlns do SignedInfo pois será herdado do Signature
+            signed_info_inner = signed_info_xml.replace(' xmlns="http://www.w3.org/2000/09/xmldsig#"', '')
+            
+            signature_xml = (
+                '<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">'
+                '{signed_info}'
+                '<SignatureValue>{sig_value}</SignatureValue>'
+                '<KeyInfo>'
+                '<X509Data>'
+                '<X509Certificate>{cert}</X509Certificate>'
+                '</X509Data>'
+                '</KeyInfo>'
+                '</Signature>'
+            ).format(signed_info=signed_info_inner, sig_value=signature_b64, cert=cert_b64)
+            
+            # Parse do Signature
+            signature_elem = etree.fromstring(signature_xml.encode('utf-8'))
+            
+            # PASSO 6: Insere Signature após o elemento assinado
+            inf_nfe.addnext(signature_elem)
             
             # Converte para string
             xml_assinado = etree.tostring(root, encoding='unicode')
