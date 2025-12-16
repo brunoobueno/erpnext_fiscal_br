@@ -31,6 +31,13 @@ def after_migrate():
         frappe.db.commit()
     except Exception as e:
         print(f"Aviso na migração: {str(e)[:200]}")
+    
+    # Tenta criar workspace se não existir
+    try:
+        create_workspace()
+        frappe.db.commit()
+    except Exception as e:
+        print(f"Aviso: Workspace não criado: {str(e)[:100]}")
 
 
 def create_roles():
@@ -433,7 +440,67 @@ def create_workspace():
         workspace.icon = "file-text"
         workspace.module = "Fiscal BR"
         workspace.category = "Modules"
+        workspace.public = 1
         workspace.is_standard = 0
+        
+        # Adiciona links para os DocTypes
+        workspace.append("links", {
+            "type": "Link",
+            "link_type": "DocType",
+            "link_to": "Nota Fiscal",
+            "label": "Notas Fiscais",
+            "onboard": 1
+        })
+        workspace.append("links", {
+            "type": "Link",
+            "link_type": "DocType",
+            "link_to": "Configuracao Fiscal",
+            "label": "Configuração Fiscal",
+            "onboard": 1
+        })
+        workspace.append("links", {
+            "type": "Link",
+            "link_type": "DocType",
+            "link_to": "Certificado Digital",
+            "label": "Certificados Digitais",
+            "onboard": 1
+        })
+        workspace.append("links", {
+            "type": "Link",
+            "link_type": "DocType",
+            "link_to": "Evento Fiscal",
+            "label": "Eventos Fiscais"
+        })
+        workspace.append("links", {
+            "type": "Link",
+            "link_type": "Report",
+            "link_to": "Notas Emitidas",
+            "label": "Relatório de Notas",
+            "is_query_report": 1
+        })
+        
+        # Adiciona shortcuts
+        workspace.append("shortcuts", {
+            "type": "DocType",
+            "link_to": "Nota Fiscal",
+            "label": "Nota Fiscal",
+            "doc_view": "List",
+            "color": "Blue"
+        })
+        workspace.append("shortcuts", {
+            "type": "DocType",
+            "link_to": "Configuracao Fiscal",
+            "label": "Configuração Fiscal",
+            "doc_view": "List",
+            "color": "Green"
+        })
+        workspace.append("shortcuts", {
+            "type": "DocType",
+            "link_to": "Certificado Digital",
+            "label": "Certificado Digital",
+            "doc_view": "List",
+            "color": "Orange"
+        })
         
         # Inserir sem validar links (DocTypes podem não existir ainda)
         workspace.flags.ignore_links = True

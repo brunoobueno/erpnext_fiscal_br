@@ -12,8 +12,13 @@ required_apps = ["frappe", "erpnext"]
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = "/assets/erpnext_fiscal_br/css/fiscal_br.css"
-app_include_js = "/assets/erpnext_fiscal_br/js/fiscal_br.js"
+# Carrega arquivos diretamente sem bundling para evitar conflitos
+app_include_css = [
+    "erpnext_fiscal_br/public/css/fiscal_br.css"
+]
+app_include_js = [
+    "erpnext_fiscal_br/public/js/fiscal_br.js"
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/erpnext_fiscal_br/css/erpnext_fiscal_br.css"
@@ -254,6 +259,10 @@ fixtures = [
     {
         "doctype": "Role",
         "filters": [["name", "in", ["Fiscal Manager", "Fiscal User"]]]
+    },
+    {
+        "doctype": "Workspace",
+        "filters": [["module", "=", "Fiscal BR"]]
     },
 ]
 

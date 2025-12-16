@@ -1,0 +1,102 @@
+{
+    "charts": [],
+    "content": "[{\"id\":\"fiscal_br_intro\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Fiscal BR\",\"col\":12}},{\"id\":\"fiscal_br_shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Nota Fiscal\",\"col\":4}},{\"id\":\"fiscal_br_shortcuts_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Configuracao Fiscal\",\"col\":4}},{\"id\":\"fiscal_br_shortcuts_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Certificado Digital\",\"col\":4}}]",
+    "creation": "2024-01-01 00:00:00.000000",
+    "custom_blocks": [],
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "file-text",
+    "idx": 0,
+    "is_hidden": 0,
+    "label": "Fiscal BR",
+    "links": [
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Notas Fiscais",
+            "link_count": 0,
+            "link_to": "Nota Fiscal",
+            "link_type": "DocType",
+            "onboard": 1,
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Configuração Fiscal",
+            "link_count": 0,
+            "link_to": "Configuracao Fiscal",
+            "link_type": "DocType",
+            "onboard": 1,
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Certificados Digitais",
+            "link_count": 0,
+            "link_to": "Certificado Digital",
+            "link_type": "DocType",
+            "onboard": 1,
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 0,
+            "label": "Eventos Fiscais",
+            "link_count": 0,
+            "link_to": "Evento Fiscal",
+            "link_type": "DocType",
+            "onboard": 0,
+            "type": "Link"
+        },
+        {
+            "hidden": 0,
+            "is_query_report": 1,
+            "label": "Notas Emitidas",
+            "link_count": 0,
+            "link_to": "Notas Emitidas",
+            "link_type": "Report",
+            "onboard": 0,
+            "type": "Link"
+        }
+    ],
+    "modified": "2024-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Fiscal BR",
+    "name": "Fiscal BR",
+    "number_cards": [],
+    "owner": "Administrator",
+    "parent_page": "",
+    "public": 1,
+    "quick_lists": [],
+    "restrict_to_domain": "",
+    "roles": [],
+    "sequence_id": 10,
+    "shortcuts": [
+        {
+            "color": "Blue",
+            "doc_view": "List",
+            "label": "Nota Fiscal",
+            "link_to": "Nota Fiscal",
+            "type": "DocType"
+        },
+        {
+            "color": "Green",
+            "doc_view": "List",
+            "label": "Configuração Fiscal",
+            "link_to": "Configuracao Fiscal",
+            "type": "DocType"
+        },
+        {
+            "color": "Orange",
+            "doc_view": "List",
+            "label": "Certificado Digital",
+            "link_to": "Certificado Digital",
+            "type": "DocType"
+        }
+    ],
+    "title": "Fiscal BR"
+}
