@@ -16,6 +16,7 @@ class ConfiguracaoFiscal(Document):
         self.validar_inscricao_estadual()
         self.validar_codigos_ibge()
         self.validar_numeracao()
+        self.calcular_aliquota_simples()
     
     def validar_cnpj(self):
         """Valida o CNPJ da empresa"""
@@ -53,6 +54,87 @@ class ConfiguracaoFiscal(Document):
         
         if self.proximo_numero_nfce and self.proximo_numero_nfce < 1:
             frappe.throw(_("Próximo número NFCe deve ser maior que zero"))
+    
+    def calcular_aliquota_simples(self):
+        """Calcula a alíquota efetiva do Simples Nacional"""
+        if not self.regime_tributario or "Simples Nacional" not in self.regime_tributario:
+            return
+        
+        if not self.anexo_simples or not self.faixa_simples or not self.rbt12:
+            return
+        
+        # Tabela de alíquotas do Simples Nacional (LC 123/2006)
+        # Formato: {anexo: {faixa: (aliquota_nominal, parcela_deduzir)}}
+        tabela_simples = {
+            "Anexo I - Comércio": {
+                "1ª Faixa": (4.0, 0),
+                "2ª Faixa": (7.3, 5940),
+                "3ª Faixa": (9.5, 13860),
+                "4ª Faixa": (10.7, 22500),
+                "5ª Faixa": (14.3, 87300),
+                "6ª Faixa": (19.0, 378000),
+            },
+            "Anexo II - Indústria": {
+                "1ª Faixa": (4.5, 0),
+                "2ª Faixa": (7.8, 5940),
+                "3ª Faixa": (10.0, 13860),
+                "4ª Faixa": (11.2, 22500),
+                "5ª Faixa": (14.7, 85500),
+                "6ª Faixa": (30.0, 720000),
+            },
+            "Anexo III - Serviços": {
+                "1ª Faixa": (6.0, 0),
+                "2ª Faixa": (11.2, 9360),
+                "3ª Faixa": (13.5, 17640),
+                "4ª Faixa": (16.0, 35640),
+                "5ª Faixa": (21.0, 125640),
+                "6ª Faixa": (33.0, 648000),
+            },
+            "Anexo IV - Serviços": {
+                "1ª Faixa": (4.5, 0),
+                "2ª Faixa": (9.0, 8100),
+                "3ª Faixa": (10.2, 12420),
+                "4ª Faixa": (14.0, 39780),
+                "5ª Faixa": (22.0, 183780),
+                "6ª Faixa": (33.0, 828000),
+            },
+            "Anexo V - Serviços": {
+                "1ª Faixa": (15.5, 0),
+                "2ª Faixa": (18.0, 4500),
+                "3ª Faixa": (19.5, 9900),
+                "4ª Faixa": (20.5, 17100),
+                "5ª Faixa": (23.0, 62100),
+                "6ª Faixa": (30.5, 540000),
+            },
+        }
+        
+        anexo = self.anexo_simples
+        faixa = self.faixa_simples.split(" - ")[0] if self.faixa_simples else None
+        
+        if anexo in tabela_simples and faixa in tabela_simples[anexo]:
+            aliq_nominal, parcela_deduzir = tabela_simples[anexo][faixa]
+            rbt12 = float(self.rbt12 or 0)
+            
+            if rbt12 > 0:
+                # Fórmula: [(RBT12 × Aliq) - PD] / RBT12
+                aliquota_efetiva = ((rbt12 * aliq_nominal / 100) - parcela_deduzir) / rbt12 * 100
+                self.aliquota_simples = max(0, aliquota_efetiva)
+            else:
+                self.aliquota_simples = aliq_nominal
+    
+    def get_crt_codigo(self):
+        """Retorna o código CRT (Código de Regime Tributário) para NFe"""
+        if not self.regime_tributario:
+            return "1"
+        
+        regime = self.regime_tributario.split(" - ")[0]
+        # CRT: 1=Simples Nacional, 2=Simples Nacional Excesso, 3=Regime Normal
+        if regime == "1":
+            return "1"  # Simples Nacional
+        elif regime == "2":
+            return "2"  # Simples Nacional - Excesso de sublimite
+        else:
+            return "3"  # Regime Normal (Lucro Real, Presumido, Arbitrado)
     
     def get_proximo_numero(self, modelo="55"):
         """

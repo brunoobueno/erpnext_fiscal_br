@@ -14,9 +14,24 @@
         "inscricao_municipal",
         "column_break_empresa",
         "regime_tributario",
+        "tipo_apuracao",
         "cnae",
         "codigo_uf",
         "codigo_municipio",
+        "section_impostos",
+        "aliquota_icms_padrao",
+        "aliquota_pis",
+        "aliquota_cofins",
+        "column_break_impostos",
+        "aliquota_irpj",
+        "aliquota_csll",
+        "aliquota_iss",
+        "section_simples",
+        "anexo_simples",
+        "faixa_simples",
+        "column_break_simples",
+        "aliquota_simples",
+        "rbt12",
         "section_ambiente",
         "ambiente",
         "uf_emissao",
@@ -84,8 +99,17 @@
             "fieldtype": "Select",
             "in_list_view": 1,
             "label": "Regime Tributário",
-            "options": "1 - Simples Nacional\n2 - Simples Nacional - Excesso\n3 - Regime Normal",
-            "reqd": 1
+            "options": "1 - Simples Nacional\n2 - Simples Nacional - Excesso de Sublimite\n3 - Lucro Presumido\n4 - Lucro Real\n5 - Lucro Arbitrado\n6 - MEI - Microempreendedor Individual",
+            "reqd": 1,
+            "description": "Regime tributário da empresa conforme legislação fiscal"
+        },
+        {
+            "fieldname": "tipo_apuracao",
+            "fieldtype": "Select",
+            "label": "Tipo de Apuração",
+            "options": "\nTrimestral\nAnual",
+            "depends_on": "eval:['3 - Lucro Presumido', '4 - Lucro Real'].includes(doc.regime_tributario)",
+            "description": "Periodicidade de apuração do IRPJ e CSLL"
         },
         {
             "fieldname": "cnae",
@@ -106,6 +130,95 @@
             "label": "Código Município (IBGE)",
             "reqd": 1,
             "description": "Código IBGE do município (7 dígitos)"
+        },
+        {
+            "fieldname": "section_impostos",
+            "fieldtype": "Section Break",
+            "label": "Configuração de Impostos",
+            "depends_on": "eval:['3 - Lucro Presumido', '4 - Lucro Real', '5 - Lucro Arbitrado'].includes(doc.regime_tributario)",
+            "description": "Alíquotas padrão para empresas do Lucro Real/Presumido"
+        },
+        {
+            "fieldname": "aliquota_icms_padrao",
+            "fieldtype": "Percent",
+            "label": "Alíquota ICMS Padrão",
+            "default": 18,
+            "description": "Alíquota interna do ICMS do estado"
+        },
+        {
+            "fieldname": "aliquota_pis",
+            "fieldtype": "Percent",
+            "label": "Alíquota PIS",
+            "default": 1.65,
+            "description": "PIS não-cumulativo: 1,65% | Cumulativo: 0,65%"
+        },
+        {
+            "fieldname": "aliquota_cofins",
+            "fieldtype": "Percent",
+            "label": "Alíquota COFINS",
+            "default": 7.6,
+            "description": "COFINS não-cumulativo: 7,6% | Cumulativo: 3%"
+        },
+        {
+            "fieldname": "column_break_impostos",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "aliquota_irpj",
+            "fieldtype": "Percent",
+            "label": "Alíquota IRPJ",
+            "default": 15,
+            "description": "Alíquota base do IRPJ (15%) + Adicional 10% sobre excedente"
+        },
+        {
+            "fieldname": "aliquota_csll",
+            "fieldtype": "Percent",
+            "label": "Alíquota CSLL",
+            "default": 9,
+            "description": "Contribuição Social sobre Lucro Líquido"
+        },
+        {
+            "fieldname": "aliquota_iss",
+            "fieldtype": "Percent",
+            "label": "Alíquota ISS",
+            "description": "Alíquota do ISS para prestadores de serviço"
+        },
+        {
+            "fieldname": "section_simples",
+            "fieldtype": "Section Break",
+            "label": "Configuração Simples Nacional",
+            "depends_on": "eval:['1 - Simples Nacional', '2 - Simples Nacional - Excesso de Sublimite', '6 - MEI - Microempreendedor Individual'].includes(doc.regime_tributario)",
+            "description": "Configurações específicas para empresas do Simples Nacional"
+        },
+        {
+            "fieldname": "anexo_simples",
+            "fieldtype": "Select",
+            "label": "Anexo do Simples Nacional",
+            "options": "\nAnexo I - Comércio\nAnexo II - Indústria\nAnexo III - Serviços\nAnexo IV - Serviços\nAnexo V - Serviços",
+            "description": "Anexo da Lei Complementar 123/2006"
+        },
+        {
+            "fieldname": "faixa_simples",
+            "fieldtype": "Select",
+            "label": "Faixa do Simples",
+            "options": "\n1ª Faixa - Até R$ 180.000,00\n2ª Faixa - De R$ 180.000,01 a R$ 360.000,00\n3ª Faixa - De R$ 360.000,01 a R$ 720.000,00\n4ª Faixa - De R$ 720.000,01 a R$ 1.800.000,00\n5ª Faixa - De R$ 1.800.000,01 a R$ 3.600.000,00\n6ª Faixa - De R$ 3.600.000,01 a R$ 4.800.000,00",
+            "description": "Faixa de faturamento dos últimos 12 meses"
+        },
+        {
+            "fieldname": "column_break_simples",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "aliquota_simples",
+            "fieldtype": "Percent",
+            "label": "Alíquota Efetiva",
+            "description": "Alíquota efetiva calculada conforme anexo e faixa"
+        },
+        {
+            "fieldname": "rbt12",
+            "fieldtype": "Currency",
+            "label": "RBT12 - Receita Bruta 12 meses",
+            "description": "Receita bruta acumulada nos últimos 12 meses"
         },
         {
             "fieldname": "section_ambiente",
